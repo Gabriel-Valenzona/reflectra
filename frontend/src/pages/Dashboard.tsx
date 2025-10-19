@@ -7,6 +7,7 @@ export default function Dashboard() {
   const [userInfo, setUserInfo] = useState<{ username: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false); // ✅ toggle for hamburger
   const navigate = useNavigate();
 
   // ✅ Automatically pick correct backend
@@ -23,7 +24,7 @@ export default function Dashboard() {
         if (!token) {
           setError("No token found. Please log in again.");
           setLoading(false);
-          setTimeout(() => navigate("/login"), 1500); // redirect to login
+          setTimeout(() => navigate("/login"), 1500);
           return;
         }
 
@@ -44,6 +45,12 @@ export default function Dashboard() {
 
     fetchUserInfo();
   }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    navigate("/login");
+  };
 
   if (loading)
     return (
@@ -86,24 +93,91 @@ export default function Dashboard() {
         color: "white",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
       }}
     >
-      <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>🎉 You are now logged in!</h1>
+      {/* ✅ Hamburger icon (top-right corner) */}
+      <div
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          cursor: "pointer",
+          width: "30px",
+        }}
+        onClick={() => setMenuOpen(!menuOpen)}
+      >
+        <div style={{ height: "4px", background: "white", marginBottom: "5px" }}></div>
+        <div style={{ height: "4px", background: "white", marginBottom: "5px" }}></div>
+        <div style={{ height: "4px", background: "white" }}></div>
+      </div>
 
-      {userInfo ? (
-        <>
-          <p style={{ fontSize: "1.2rem", marginBottom: "5px" }}>
-            <strong>Username:</strong> {userInfo.username}
+      {/* ✅ Dropdown menu */}
+      {menuOpen && (
+        <div
+          style={{
+            position: "absolute",
+            top: "60px",
+            right: "20px",
+            backgroundColor: "#1e293b",
+            borderRadius: "8px",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+            width: "150px",
+            textAlign: "left",
+            zIndex: 10,
+          }}
+        >
+          <p
+            style={{
+              padding: "10px",
+              cursor: "pointer",
+              borderBottom: "1px solid #334155",
+            }}
+          >
+            Account
           </p>
-          <p style={{ fontSize: "1.2rem" }}>
-            <strong>Email:</strong> {userInfo.email}
+          <p
+            style={{
+              padding: "10px",
+              cursor: "pointer",
+              borderBottom: "1px solid #334155",
+            }}
+          >
+            Settings
           </p>
-        </>
-      ) : (
-        <p>No user information available.</p>
+          <p
+            style={{ padding: "10px", cursor: "pointer", color: "#f87171" }}
+            onClick={handleLogout}
+          >
+            Sign Out
+          </p>
+        </div>
       )}
+
+      {/* ✅ Main dashboard content */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>🎉 You are now logged in!</h1>
+
+        {userInfo ? (
+          <>
+            <p style={{ fontSize: "1.2rem", marginBottom: "5px" }}>
+              <strong>Username:</strong> {userInfo.username}
+            </p>
+            <p style={{ fontSize: "1.2rem" }}>
+              <strong>Email:</strong> {userInfo.email}
+            </p>
+          </>
+        ) : (
+          <p>No user information available.</p>
+        )}
+      </div>
     </div>
   );
 }
