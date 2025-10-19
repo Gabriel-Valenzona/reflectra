@@ -1,0 +1,61 @@
+/* src/styles/global.css */
+
+/* 1) Pull in Tailwind's base resets, component layer, and utilities */
+@import "tailwindcss";
+
+
+/* 2) A few CSS variables and small shims that Tailwind cannot express directly */
+:root {
+  --primary-color: #0a1e27;
+  --secondary-color: #e9c675;
+  --text-light: #cbd5e1;
+  --white: #ffffff;
+}
+
+/* Make the app fill the viewport and use your font family globally */
+html, body, #root {
+  height: 100%;
+  font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+/* Container utility mirroring your original .section__container */
+.section__container {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: 5rem 1rem;
+}
+
+/* Decorative subheader rule + translucent big number (01/02/03) */
+.section__subheader {
+  position: relative;
+  isolation: isolate; /* allow ::after to render behind the text */
+  padding-left: 5rem; /* space for the line on the left */
+  letter-spacing: 2px;
+}
+.section__subheader::before {
+  position: absolute;
+  content: "";
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  height: 2px;
+  width: 4rem;
+  background-color: var(--secondary-color);
+}
+.section__subheader::after {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(-60%, -50%);
+  font-size: 8rem;
+  font-weight: 600;
+  color: var(--white);
+  opacity: 0.1;
+  z-index: -1;
+  content: ""; /* set per-block below */
+}
+
+/* Assign the numeric watermark per block to match your original CSS */
+.about__content-1 .section__subheader::after { content: "01"; }
+.about__content-2 .section__subheader::after { content: "02"; }
+.about__content-3 .section__subheader::after { content: "03"; }
