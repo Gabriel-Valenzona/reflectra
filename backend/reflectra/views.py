@@ -1,6 +1,6 @@
 # ===========================================
 # File: reflectra/views.py
-# Description: Views for user search, follow, unfollow, and followers list
+# Description: Views for user search, follow, unfollow, followers list, and following list
 # ===========================================
 
 from rest_framework.decorators import api_view, permission_classes
@@ -32,7 +32,7 @@ def list_users(request):
             'id': user.id,
             'username': user.username,
             'email': user.email,
-            'bio': getattr(profile, 'bio', '')
+            'bio': getattr(profile, 'bio', '') if profile else ''
         })
 
     logger.info(f"👥 User list fetched by {request.user.username}")
@@ -64,7 +64,7 @@ def follow_user(request, user_id):
 # -------------------------------
 # Unfollow a User
 # -------------------------------
-@api_view(['DELETE'])
+@api_view(['DELETE', 'POST'])
 @permission_classes([IsAuthenticated])
 def unfollow_user(request, user_id):
     try:
@@ -97,3 +97,28 @@ def get_followers(request, user_id):
 
     except User.DoesNotExist:
         return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+# ===========================================
+# GET FOLLOWING (who the current user follows)
+# ===========================================
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_following(request):
+    user = request.user
+    following_qs = Follow.objects.filter(follower=user).select_related('following')
+    following_data = []
+
+    for f in following_qs:
+        # ✅ Safely handle missing UserProfile objects
+        profile = getattr(f.following, 'profile', None)
+        following_data.append({
+            "id": f.following.id,
+            "username": f.following.username,
+            "email": f.following.email,
+            "bio": getattr(profile, 'bio', '') if profile else '',
+            "mood_preference": getattr(profile, 'mood_preference', '') if profile else '',
+        })
+
+    logger.info(f"➡️ Following list fetched for {user.username} (ID {user.id})")
+    return Response({"following": following_data}, status=status.HTTP_200_OK)

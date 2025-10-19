@@ -1,7 +1,6 @@
-// src/pages/Account.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Navbar from "../components/Navbar"; // ✅ Shared navbar
+import Navbar from "../components/Navbar";
 
 export default function Account() {
   const [userInfo, setUserInfo] = useState({
@@ -12,16 +11,17 @@ export default function Account() {
   });
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [showConfirm, setShowConfirm] = useState(false); // ✅ For delete modal
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [following, setFollowing] = useState<any[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
 
   const BASE_URL =
     window.location.hostname === "localhost"
       ? "http://127.0.0.1:8000"
       : "https://reflectra-backend.onrender.com";
 
-  // ✅ Fetch user info
   useEffect(() => {
-    const fetchUserInfo = async () => {
+    const fetchAccountData = async () => {
       try {
         const token = localStorage.getItem("accessToken");
         if (!token) {
@@ -30,28 +30,45 @@ export default function Account() {
           return;
         }
 
-        const response = await axios.get(`${BASE_URL}/api/userinfo/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const [userRes, followRes, postRes] = await Promise.all([
+          axios.get(`${BASE_URL}/api/userinfo/`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${BASE_URL}/api/following/`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${BASE_URL}/api/posts/`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
         setUserInfo({
-          username: response.data.username || "",
-          email: response.data.email || "",
-          bio: response.data.bio || "",
-          mood_preference: response.data.mood_preference || "",
+          username: userRes.data.username,
+          email: userRes.data.email,
+          bio: userRes.data.bio,
+          mood_preference: userRes.data.mood_preference,
         });
+
+        // ✅ Use direct backend data for following list
+        if (followRes.data.following) {
+            setFollowing(followRes.data.following); // use objects directly
+        } else {
+            setFollowing([]);
+        }
+
+        // ✅ Filter posts to show only the user's own posts
+        setPosts(postRes.data.filter((p: any) => p.username === userRes.data.username));
       } catch (err) {
-        console.error("Error fetching user info:", err);
-        setMessage("Failed to fetch user info.");
+        console.error("Error loading account info:", err);
+        setMessage("Failed to load account info.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserInfo();
+    fetchAccountData();
   }, []);
 
-  // ✅ Save updates
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("Saving...");
@@ -66,9 +83,7 @@ export default function Account() {
           bio: userInfo.bio,
           mood: userInfo.mood_preference,
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setMessage("✅ Profile updated successfully!");
@@ -78,7 +93,6 @@ export default function Account() {
     }
   };
 
-  // ✅ Delete account
   const handleDeleteAccount = async () => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -92,6 +106,18 @@ export default function Account() {
     } catch (err) {
       console.error("Error deleting account:", err);
       setMessage("❌ Failed to delete account.");
+    }
+  };
+
+  const handleDeletePost = async (postId: number) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      await axios.delete(`${BASE_URL}/api/posts/${postId}/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+    } catch (err) {
+      console.error("Error deleting post:", err);
     }
   };
 
@@ -116,90 +142,166 @@ export default function Account() {
       <Navbar />
       <div
         style={{
-          height: "100vh",
           backgroundColor: "#0f172a",
           color: "white",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "20px",
+          minHeight: "100vh",
+          padding: "40px 20px",
+          fontFamily: "inherit",
         }}
       >
-        <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>👤 Account Settings</h1>
+        <h1 style={{ fontSize: "2rem", marginBottom: "20px", textAlign: "center" }}>
+          👤 My Profile
+        </h1>
 
-        <form
-          onSubmit={handleSave}
+
+
+        {/* Following List */}
+        <div
           style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-            width: "300px",
+            backgroundColor: "#1e293b",
+            borderRadius: "10px",
+            padding: "20px",
+            maxWidth: "700px",
+            margin: "0 auto 40px",
           }}
         >
-          <input
-            type="text"
-            placeholder="Username"
-            value={userInfo.username}
-            onChange={(e) => setUserInfo({ ...userInfo, username: e.target.value })}
-            style={{ padding: "10px", borderRadius: "5px", border: "none" }}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={userInfo.email}
-            onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })}
-            style={{ padding: "10px", borderRadius: "5px", border: "none" }}
-          />
-          <textarea
-            placeholder="Short bio..."
-            value={userInfo.bio}
-            onChange={(e) => setUserInfo({ ...userInfo, bio: e.target.value })}
-            rows={3}
-            style={{ padding: "10px", borderRadius: "5px", border: "none" }}
-          />
-          <select
-            value={userInfo.mood_preference}
-            onChange={(e) =>
-              setUserInfo({ ...userInfo, mood_preference: e.target.value })
-            }
-            style={{ padding: "10px", borderRadius: "5px", border: "none" }}
-          >
-            <option value="">Select mood</option>
-            {[
-              "happy",
-              "sad",
-              "angry",
-              "tired",
-              "chill",
-              "motivated",
-              "calm",
-              "stressed",
-              "neutral",
-            ].map((m) => (
-              <option key={m} value={m}>
-                {m.charAt(0).toUpperCase() + m.slice(1)}
-              </option>
-            ))}
-          </select>
+          <h2>👥 Following</h2>
+          {following.length > 0 ? (
+            <ul style={{ paddingLeft: "20px" }}>
+              {following.map((user, i) => (
+                <li key={i}>{user.username}</li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ color: "#94a3b8" }}>You’re not following anyone yet.</p>
+          )}
+        </div>
 
-          <button
-            type="submit"
-            style={{
-              backgroundColor: "#2563eb",
-              color: "white",
-              padding: "10px",
-              borderRadius: "5px",
-              border: "none",
-              cursor: "pointer",
-              marginTop: "10px",
-            }}
-          >
-            Save Changes
-          </button>
-        </form>
+        {/* User’s Posts */}
+        <div
+          style={{
+            backgroundColor: "#1e293b",
+            borderRadius: "10px",
+            padding: "20px",
+            maxWidth: "700px",
+            margin: "0 auto 40px",
+          }}
+        >
+          <h2>📝 My Posts</h2>
+          {posts.length > 0 ? (
+            posts.map((post) => (
+              <div
+                key={post.id}
+                style={{
+                  backgroundColor: "#0f172a",
+                  padding: "15px",
+                  borderRadius: "8px",
+                  marginBottom: "15px",
+                }}
+              >
+                <p style={{ marginBottom: "10px" }}>{post.content_text}</p>
+                <p style={{ fontSize: "0.9rem", color: "#94a3b8" }}>
+                  {new Date(post.timestamp).toLocaleString()}
+                </p>
+                <button
+                  onClick={() => handleDeletePost(post.id)}
+                  style={{
+                    marginTop: "10px",
+                    backgroundColor: "#ef4444",
+                    border: "none",
+                    borderRadius: "5px",
+                    padding: "6px 12px",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete Post
+                </button>
+              </div>
+            ))
+          ) : (
+            <p style={{ color: "#94a3b8" }}>You haven’t made any posts yet.</p>
+          )}
+        </div>
 
-        {/* ✅ Delete Account Button */}
+        {/* Edit Profile */}
+        <div
+          style={{
+            backgroundColor: "#1e293b",
+            borderRadius: "10px",
+            padding: "20px",
+            maxWidth: "700px",
+            margin: "0 auto 40px",
+          }}
+        >
+          <h2>⚙️ Edit Profile</h2>
+          <form
+            onSubmit={handleSave}
+            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+          >
+            <input
+              type="text"
+              placeholder="Username"
+              value={userInfo.username}
+              onChange={(e) => setUserInfo({ ...userInfo, username: e.target.value })}
+              style={{ padding: "10px", borderRadius: "5px", border: "none" }}
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              value={userInfo.email}
+              onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })}
+              style={{ padding: "10px", borderRadius: "5px", border: "none" }}
+            />
+            <textarea
+              placeholder="Short bio..."
+              value={userInfo.bio}
+              onChange={(e) => setUserInfo({ ...userInfo, bio: e.target.value })}
+              rows={3}
+              style={{ padding: "10px", borderRadius: "5px", border: "none" }}
+            />
+            <select
+              value={userInfo.mood_preference}
+              onChange={(e) =>
+                setUserInfo({ ...userInfo, mood_preference: e.target.value })
+              }
+              style={{ padding: "10px", borderRadius: "5px", border: "none" }}
+            >
+              <option value="">Select mood</option>
+              {[
+                "happy",
+                "sad",
+                "angry",
+                "tired",
+                "chill",
+                "motivated",
+                "calm",
+                "stressed",
+                "neutral",
+              ].map((m) => (
+                <option key={m} value={m}>
+                  {m.charAt(0).toUpperCase() + m.slice(1)}
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              style={{
+                backgroundColor: "#2563eb",
+                color: "white",
+                padding: "10px",
+                borderRadius: "5px",
+                border: "none",
+                cursor: "pointer",
+                marginTop: "10px",
+              }}
+            >
+              Save Changes
+            </button>
+          </form>
+        </div>
+
+        {/* Delete Account */}
         <button
           onClick={() => setShowConfirm(true)}
           style={{
@@ -210,6 +312,9 @@ export default function Account() {
             border: "none",
             cursor: "pointer",
             marginTop: "15px",
+            display: "block",
+            marginLeft: "auto",
+            marginRight: "auto",
             width: "300px",
           }}
         >
@@ -217,10 +322,11 @@ export default function Account() {
         </button>
 
         {message && (
-          <p style={{ marginTop: "15px", color: "#a5b4fc" }}>{message}</p>
+          <p style={{ marginTop: "15px", color: "#a5b4fc", textAlign: "center" }}>
+            {message}
+          </p>
         )}
 
-        {/* ✅ Confirmation Modal */}
         {showConfirm && (
           <div
             style={{

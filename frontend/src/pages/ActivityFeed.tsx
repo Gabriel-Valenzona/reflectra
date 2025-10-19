@@ -17,31 +17,13 @@ export default function ActivityFeed() {
   const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const [followingList, setFollowingList] = useState<number[]>([]); // ✅ store IDs of followed users
-  const [currentUserId, setCurrentUserId] = useState<number | null>(null); // ✅ store current user ID
+  const [followingList, setFollowingList] = useState<number[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   const BASE_URL =
     window.location.hostname === "localhost"
       ? "http://127.0.0.1:8000"
       : "https://reflectra-backend.onrender.com";
-
-  // ✅ Fetch users (only after clicking Search)
-  const fetchUsers = async (query = "") => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("accessToken");
-      const response = await axios.get(`${BASE_URL}/api/find_users/`, {
-        params: query ? { q: query } : {},
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUsers(response.data);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      setUsers([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // ✅ Fetch following list
   const fetchFollowingList = async () => {
@@ -50,14 +32,19 @@ export default function ActivityFeed() {
       const response = await axios.get(`${BASE_URL}/api/following/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // assuming backend returns list of user IDs you follow
-      setFollowingList(response.data.following_ids || []);
+
+      if (response.data.following) {
+        const ids = response.data.following.map((u: any) => u.id);
+        setFollowingList(ids);
+      } else {
+        setFollowingList([]);
+      }
     } catch (error) {
       console.error("Error fetching following list:", error);
     }
   };
 
-  // ✅ Fetch current user info (for self-post visibility)
+  // ✅ Fetch current user info
   const fetchCurrentUser = async () => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -83,7 +70,31 @@ export default function ActivityFeed() {
     }
   };
 
-  // ✅ Load data on mount
+  // ✅ Fetch users (for search)
+  const fetchUsers = async (query = "") => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`${BASE_URL}/api/find_users/`, {
+        params: query ? { q: query } : {},
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const fetchedUsers = response.data.map((u: any) => ({
+        ...u,
+        is_following: followingList.includes(u.id),
+      }));
+
+      setUsers(fetchedUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Load user + following + posts
   useEffect(() => {
     fetchCurrentUser();
     fetchFollowingList();
@@ -110,7 +121,7 @@ export default function ActivityFeed() {
     }
   };
 
-  // 🔍 Handle user search
+  // 🔍 Handle search
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setHasSearched(true);
@@ -126,33 +137,29 @@ export default function ActivityFeed() {
 
     try {
       await axios.post(endpoint, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.id === userId ? { ...user, is_following: !currentlyFollowing } : user
-        )
-      );
 
-      // update following list in frontend
       setFollowingList((prev) =>
         currentlyFollowing ? prev.filter((id) => id !== userId) : [...prev, userId]
       );
 
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId ? { ...u, is_following: !currentlyFollowing } : u
+        )
+      );
+
       if (selectedUser && selectedUser.id === userId) {
-        setSelectedUser({
-          ...selectedUser,
-          is_following: !currentlyFollowing,
-        });
+        setSelectedUser({ ...selectedUser, is_following: !currentlyFollowing });
       }
     } catch (err) {
       console.error("Error toggling follow:", err);
     }
   };
 
-  // ✅ Filter posts — only show own + followed users' posts
+  // ✅ Filter posts to show only your posts + those you follow
   const visiblePosts = posts.filter(
     (post) =>
-      (currentUserId && post.user_id === currentUserId) ||
-      followingList.includes(post.user_id)
+      post.user_id === currentUserId || followingList.includes(post.user_id)
   );
 
   return (
@@ -222,7 +229,7 @@ export default function ActivityFeed() {
           </button>
         </form>
 
-        {/* 📰 Filtered Posts List */}
+        {/* 📰 Posts List */}
         <div
           style={{
             width: "90%",
@@ -305,7 +312,7 @@ export default function ActivityFeed() {
           </button>
         </form>
 
-        {/* 👥 User Results — only after clicking Search */}
+        {/* 👥 User Results */}
         {hasSearched && (
           loading ? (
             <p>Loading...</p>
@@ -329,7 +336,9 @@ export default function ActivityFeed() {
                   email={user.email}
                   bio={user.bio}
                   isFollowing={user.is_following}
-                  onFollowToggle={() => handleFollowToggle(user.id, user.is_following)}
+                  onFollowToggle={() =>
+                    handleFollowToggle(user.id, user.is_following)
+                  }
                   onClick={() => setSelectedUser(user)}
                 />
               ))}
@@ -339,7 +348,7 @@ export default function ActivityFeed() {
           )
         )}
 
-        {/* ✅ Modal for Selected User */}
+        {/* ✅ Selected User Modal */}
         {selectedUser && (
           <div
             style={{

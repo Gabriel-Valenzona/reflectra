@@ -61,3 +61,14 @@ def list_create_posts(request):
     ]
 
     return Response(serialized)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_post(request, post_id):
+    user = request.user
+    try:
+        post = AccountabilityPosts.objects.get(id=post_id, user=user)
+        post.delete()
+        return Response({'message': 'Post deleted successfully.'})
+    except AccountabilityPosts.DoesNotExist:
+        return Response({'error': 'Post not found or unauthorized.'}, status=404)
