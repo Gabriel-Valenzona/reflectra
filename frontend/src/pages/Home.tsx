@@ -110,8 +110,12 @@ const Home: React.FC = () => {
           {/* SOCIALS */}
           <div className="header__socials hidden md:flex">
             <span className="-rotate-90">Follow us</span>
-            <a href="#" className="-rotate-90 hover:text-secondary"><i className="ri-instagram-line" /></a>
-            <a href="#" className="-rotate-90 hover:text-secondary"><i className="ri-twitter-fill" /></a>
+            <a href="#" className="-rotate-90 hover:text-secondary">
+              <i className="ri-instagram-line" />
+            </a>
+            <a href="#" className="-rotate-90 hover:text-secondary">
+              <i className="ri-twitter-x-fill" /> {/* X logo */}
+            </a>
           </div>
         </div>
       </header>
