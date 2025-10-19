@@ -6,6 +6,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+# -------------------------------
+# Mood Options for User Profiles
+# -------------------------------
 MOOD_CHOICES = [
     ('happy', 'Happy'),
     ('sad', 'Sad'),
@@ -27,6 +30,9 @@ MOOD_CHOICES = [
     ('neutral', 'Neutral'),
 ]
 
+# -------------------------------
+# UserProfile Model (extends Django User)
+# -------------------------------
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     bio = models.TextField(blank=True, null=True)
