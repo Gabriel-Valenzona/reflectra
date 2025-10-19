@@ -1,0 +1,174 @@
+/* General page styling */
+body {
+  background-color: #2b2b2b;
+  margin: 0;
+  font-family: sans-serif;
+  color: white;
+}
+
+.App {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Main hero section with background GIF */
+.hero-section {
+  position: relative;
+  height: 75vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+/* Fade to dark at bottom */
+.hero-section::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 30%;
+  background: linear-gradient(
+    to bottom,
+    rgba(43, 43, 43, 0) 0%,
+    rgba(43, 43, 43, 1) 100%
+  );
+  pointer-events: none;
+}
+
+/* App title */
+.title {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: bold;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Login button */
+.login-container {
+  position: absolute;
+  top: 75%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-button {
+  background-color: rgba(60, 60, 60, 0.7);
+  color: white;
+  border: 2px solid rgba(80, 80, 80, 0.9);
+  padding: 10px 24px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  z-index: 5;
+}
+
+.login-button:hover {
+  background-color: rgba(40, 40, 40, 0.9);
+}
+
+/* Create Account link */
+.link-container {
+  position: absolute;
+  top: 82%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative; /* so below-link modal positions properly */
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+
+.link-button:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Modal shared styling */
+.modal {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(30, 30, 30, 0.95);
+  border: 2px solid rgba(80, 80, 80, 0.9);
+  border-radius: 10px;
+  padding: 20px 30px;
+  color: white;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+}
+
+/* When visible */
+.modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Modal inputs */
+.modal-content input {
+  margin: 8px 0;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  width: 200px;
+}
+
+/* Modal button */
+.modal-btn {
+  background-color: rgba(80, 80, 80, 0.9);
+  border: none;
+  padding: 8px 16px;
+  margin-top: 10px;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-btn:hover {
+  background-color: rgba(60, 60, 60, 1);
+}
+
+/* Modal placement */
+.above-login {
+  bottom: calc(100% + 5px); /* directly above login */
+  pointer-events: auto;
+}
+
+.below-link {
+  top: calc(100% + 5px); /* directly below link */
+  pointer-events: auto;
+}
+
+/* Bottom section */
+.content-section {
+  height: 25vh;
+  width: 100%;
+  background-color: #2b2b2b;
+}
