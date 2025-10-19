@@ -1,4 +1,8 @@
-// src/components/Navbar.tsx
+// ===========================================
+// File: src/components/Navbar.tsx
+// Description: Shared top-right hamburger navigation menu
+// ===========================================
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -6,10 +10,12 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
+  // ✅ Handles logout and redirect to home page
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-    navigate("/login");
+    console.log("🚪 User signed out and tokens cleared");
+    navigate("/"); // ✅ Redirects to home page now
   };
 
   return (
@@ -27,7 +33,7 @@ export default function Navbar() {
         <div style={{ height: "4px", background: "white" }}></div>
       </div>
 
-      {/* Dropdown */}
+      {/* Dropdown Menu */}
       {menuOpen && (
         <div
           style={{
