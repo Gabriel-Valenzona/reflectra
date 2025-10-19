@@ -4,13 +4,13 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
-  const [loginInput, setLoginInput] = useState(""); // ✅ renamed (can be username or email)
+  const [loginInput, setLoginInput] = useState(""); // ✅ can be username or email
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  // ✅ automatically pick correct backend
+  // ✅ Automatically pick correct backend
   const BASE_URL =
     window.location.hostname === "localhost"
       ? "http://127.0.0.1:8000"
@@ -22,24 +22,26 @@ export default function LoginPage() {
     setMessage("");
 
     try {
-      // ✅ send single field "username" (can be email or username)
+      // ✅ Send single field "username" (can be username OR email)
       const response = await axios.post(`${BASE_URL}/api/login/`, {
-        username: loginInput, // <--- this matches backend key
+        username: loginInput,
         password,
       });
 
       const { access, refresh, user } = response.data;
 
-      // ✅ store JWT tokens
+      // ✅ Store JWT tokens for later use
       localStorage.setItem("accessToken", access);
       localStorage.setItem("refreshToken", refresh);
+      localStorage.setItem("username", user); // store username too
 
       console.log(`User logged in; username = ${user}`);
       console.log("Access token:", access);
       console.log("Refresh token:", refresh);
 
       setMessage(`✅ Login successful! Welcome, ${user}`);
-      setTimeout(() => navigate("/home"), 1500);
+      // ✅ Redirect to /dashboard after login
+      setTimeout(() => navigate("/dashboard"), 1500);
     } catch (error: any) {
       console.error("Error:", error);
       if (error.response) {

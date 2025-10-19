@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 import logging
 
@@ -81,4 +82,15 @@ def login_user(request):
         'access': str(refresh.access_token),
         'refresh': str(refresh),
         'user': user.username,
+    })
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_info(request):
+    user = request.user
+    return Response({
+        'username': user.username,
+        'email': user.email
     })
