@@ -319,28 +319,70 @@ export default function ActivityFeed() {
           ) : users.length > 0 ? (
             <div
               style={{
+                width: "90%",
+                maxWidth: "600px",
                 display: "flex",
-                flexWrap: "wrap",
-                justifyContent: "center",
+                flexDirection: "column",
                 gap: "20px",
-                width: "80%",
-                maxWidth: "1000px",
                 marginBottom: "40px",
               }}
             >
               {users.map((user) => (
-                <UserCard
+                <div
                   key={user.id}
-                  id={user.id}
-                  username={user.username}
-                  email={user.email}
-                  bio={user.bio}
-                  isFollowing={user.is_following}
-                  onFollowToggle={() =>
-                    handleFollowToggle(user.id, user.is_following)
-                  }
+                  style={{
+                    backgroundColor: "#1e293b",
+                    borderRadius: "10px",
+                    padding: "20px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                    cursor: "pointer",
+                    transition: "background-color 0.2s",
+                  }}
                   onClick={() => setSelectedUser(user)}
-                />
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#2d3b52")
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#1e293b")
+                  }
+                >
+                  <p style={{ marginBottom: "5px", fontSize: "1.1rem", fontWeight: "600" }}>
+                    {user.username}
+                  </p>
+                  <p style={{ color: "#94a3b8", fontSize: "0.9rem", marginBottom: "8px" }}>
+                    {user.email || "No email provided."}
+                  </p>
+                  <p style={{ fontSize: "1rem", marginBottom: "10px" }}>
+                    {user.bio || "No bio provided."}
+                  </p>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent modal open when clicking button
+                      handleFollowToggle(user.id, user.is_following);
+                    }}
+                    style={{
+                      backgroundColor: user.is_following ? "#475569" : "#2563eb",
+                      border: "none",
+                      borderRadius: "6px",
+                      padding: "10px 20px",
+                      color: "white",
+                      cursor: "pointer",
+                      transition: "0.2s",
+                    }}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.backgroundColor = user.is_following
+                        ? "#ef4444"
+                        : "#1d4ed8")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.backgroundColor = user.is_following
+                        ? "#475569"
+                        : "#2563eb")
+                    }
+                  >
+                    {user.is_following ? "Unfollow" : "Follow"}
+                  </button>
+                </div>
               ))}
             </div>
           ) : (
@@ -348,6 +390,8 @@ export default function ActivityFeed() {
           )
         )}
 
+
+        
         {/* ✅ Selected User Modal */}
         {selectedUser && (
           <div
