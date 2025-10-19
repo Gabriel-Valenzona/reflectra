@@ -132,6 +132,7 @@ export default function Dashboard() {
               cursor: "pointer",
               borderBottom: "1px solid #334155",
             }}
+            onClick={() => navigate("/account")}
           >
             Account
           </p>
@@ -141,6 +142,7 @@ export default function Dashboard() {
               cursor: "pointer",
               borderBottom: "1px solid #334155",
             }}
+            onClick={() => navigate("/settings")}
           >
             Settings
           </p>

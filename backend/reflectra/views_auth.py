@@ -1,13 +1,17 @@
-# reflectra/views_auth.py
+# ===========================================
+# File: reflectra/views_auth.py
+# Description: Authentication and user info management
+# ===========================================
+
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 import logging
+from .models import UserProfile
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -31,18 +35,18 @@ def register_user(request):
     if User.objects.filter(email=email).exists():
         return Response({'error': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Create the user
+    # Create Django user
     user = User.objects.create_user(username=username, email=email, password=password)
 
-    # Log the event
-    log_message = f"✅ User created; username = {username}, email = {email}, password = {password}"
+    # Also create a blank profile
+    UserProfile.objects.create(user=user)
+
+    # Log event
+    log_message = f"✅ User created; username = {username}, email = {email}"
     logger.info(log_message)
     print(log_message)
 
-    return Response(
-        {'message': f'User \"{username}\" created successfully'},
-        status=status.HTTP_201_CREATED
-    )
+    return Response({'message': f'User \"{username}\" created successfully'}, status=status.HTTP_201_CREATED)
 
 
 # -------------------------------
@@ -67,7 +71,7 @@ def login_user(request):
     except User.DoesNotExist:
         return Response({'error': 'Invalid username/email or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # Authenticate with the resolved username
+    # Authenticate
     user = authenticate(username=username, password=password)
     if not user:
         return Response({'error': 'Invalid username/email or password'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -85,12 +89,64 @@ def login_user(request):
     })
 
 
-
+# -------------------------------
+# GET USER INFO
+# -------------------------------
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_info(request):
     user = request.user
+    profile = getattr(user, 'profile', None)
+
     return Response({
         'username': user.username,
-        'email': user.email
+        'email': user.email,
+        'bio': getattr(profile, 'bio', ''),
+        'mood_preference': getattr(profile, 'mood_preference', '')
     })
+
+
+# -------------------------------
+# UPDATE USER INFO
+# -------------------------------
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_user_info(request):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+
+    new_name = request.data.get('name')
+    new_email = request.data.get('email')
+    new_bio = request.data.get('bio', '')
+    new_mood = request.data.get('mood', '')
+
+    if not new_name or not new_email:
+        return Response({'error': 'Name and email are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    old_name = user.username
+    old_email = user.email
+
+    # Update Django user
+    user.username = new_name
+    user.email = new_email
+    user.save()
+
+    # Update or create profile
+    if profile:
+        profile.bio = new_bio
+        profile.mood_preference = new_mood
+        profile.save()
+    else:
+        UserProfile.objects.create(user=user, bio=new_bio, mood_preference=new_mood)
+
+    log_message = (
+        f"📝 User profile updated:\n"
+        f"   - Username: '{old_name}' → '{new_name}'\n"
+        f"   - Email: '{old_email}' → '{new_email}'\n"
+        f"   - Bio changed to: '{new_bio}'\n"
+        f"   - Mood changed to: '{new_mood}'"
+    )
+    logger.info(log_message)
+    print(log_message)
+
+    return Response({'message': 'Profile updated successfully.'}, status=status.HTTP_200_OK)

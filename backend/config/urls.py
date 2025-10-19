@@ -1,3 +1,8 @@
+# ===========================================
+# File: config/urls.py
+# Description: Root URL configuration for Reflectra backend
+# ===========================================
+
 """
 URL configuration for config project.
 
@@ -9,7 +14,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
 
-# simple root route to confirm backend is running
+# ✅ Simple root route to confirm backend is running
 def home(request):
     return JsonResponse({
         "status": "ok",
@@ -18,7 +23,7 @@ def home(request):
     })
 
 urlpatterns = [
-    path('', home),  # base health check
+    path('', home),  # ✅ Base health check
     path('admin/', admin.site.urls),
-    path('api/', include('reflectra.urls')),  # include all reflectra routes
+    path('api/', include('reflectra.urls')),  # ✅ Include all reflectra routes
 ]

@@ -3,7 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import Dashboard from "./pages/Dashboard"; // ✅ Added import for dashboard
+import Dashboard from "./pages/Dashboard";
+import Account from "./pages/Account";   // ✅ newly added
+import Settings from "./pages/Settings"; // ✅ newly added
 
 export default function App() {
   return (
@@ -16,8 +18,10 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* ✅ Dashboard (protected route after login) */}
+        {/* ✅ Protected routes after login */}
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/account" element={<Account />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </Router>
   );
