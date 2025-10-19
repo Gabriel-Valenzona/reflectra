@@ -1,6 +1,6 @@
 # ===========================================
 # File: reflectra/views_auth.py
-# Description: Authentication and user info management
+# Description: Authentication and user info management (with user ID logging)
 # ===========================================
 
 from rest_framework.decorators import api_view, permission_classes
@@ -37,12 +37,9 @@ def register_user(request):
 
     # Create Django user
     user = User.objects.create_user(username=username, email=email, password=password)
-
-    # Also create a blank profile
     UserProfile.objects.create(user=user)
 
-    # Log event
-    log_message = f"✅ User created; username = {username}, email = {email}"
+    log_message = f"✅ User registered | user_id={user.id}, username={username}, email={email}"
     logger.info(log_message)
     print(log_message)
 
@@ -55,13 +52,12 @@ def register_user(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
-    login_input = request.data.get('username')  # can be username OR email
+    login_input = request.data.get('username')
     password = request.data.get('password')
 
     if not all([login_input, password]):
         return Response({'error': 'Both username/email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Determine if input is email or username
     try:
         if '@' in login_input:
             user_obj = User.objects.get(email=login_input)
@@ -71,14 +67,13 @@ def login_user(request):
     except User.DoesNotExist:
         return Response({'error': 'Invalid username/email or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # Authenticate
     user = authenticate(username=username, password=password)
     if not user:
         return Response({'error': 'Invalid username/email or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
     refresh = RefreshToken.for_user(user)
 
-    log_message = f"🔐 User logged in; username = {user.username}, email = {user.email}"
+    log_message = f"🔐 User logged in | user_id={user.id}, username={user.username}, email={user.email}"
     logger.info(log_message)
     print(log_message)
 
@@ -98,7 +93,12 @@ def get_user_info(request):
     user = request.user
     profile = getattr(user, 'profile', None)
 
+    log_message = f"📄 User info fetched | user_id={user.id}, username={user.username}, email={user.email}"
+    logger.info(log_message)
+    print(log_message)
+
     return Response({
+        'user_id': user.id,
         'username': user.username,
         'email': user.email,
         'bio': getattr(profile, 'bio', ''),
@@ -126,12 +126,10 @@ def update_user_info(request):
     old_name = user.username
     old_email = user.email
 
-    # Update Django user
     user.username = new_name
     user.email = new_email
     user.save()
 
-    # Update or create profile
     if profile:
         profile.bio = new_bio
         profile.mood_preference = new_mood
@@ -140,13 +138,42 @@ def update_user_info(request):
         UserProfile.objects.create(user=user, bio=new_bio, mood_preference=new_mood)
 
     log_message = (
-        f"📝 User profile updated:\n"
+        f"📝 User profile updated | user_id={user.id}\n"
         f"   - Username: '{old_name}' → '{new_name}'\n"
         f"   - Email: '{old_email}' → '{new_email}'\n"
-        f"   - Bio changed to: '{new_bio}'\n"
-        f"   - Mood changed to: '{new_mood}'"
+        f"   - Bio: '{new_bio}'\n"
+        f"   - Mood: '{new_mood}'"
     )
     logger.info(log_message)
     print(log_message)
 
     return Response({'message': 'Profile updated successfully.'}, status=status.HTTP_200_OK)
+
+
+# -------------------------------
+# DELETE USER ACCOUNT
+# -------------------------------
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_user_account(request):
+    user = request.user
+    username = user.username
+    email = user.email
+    user_id = user.id
+
+    try:
+        profile = getattr(user, 'profile', None)
+        if profile:
+            profile.delete()
+
+        user.delete()
+
+        log_message = f"🗑️ User account deleted | user_id={user_id}, username={username}, email={email}"
+        logger.info(log_message)
+        print(log_message)
+
+        return Response({'message': 'Account deleted successfully.'}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"❌ Failed to delete account | user_id={user_id}, username={username} | Error: {e}")
+        return Response({'error': 'Failed to delete account.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

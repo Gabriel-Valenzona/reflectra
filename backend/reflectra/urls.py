@@ -14,6 +14,9 @@ urlpatterns = [
     # ✅ Get current logged-in user info
     path('userinfo/', views_auth.get_user_info, name='userinfo'),
 
-    # ✅ Update user account info (bio, mood, email, etc.)
+    # ✅ Update user account info
     path('update_user_info/', views_auth.update_user_info, name='update_user_info'),
+
+    # ✅ Delete user account
+    path('delete_account/', views_auth.delete_user_account, name='delete_user_account'),
 ]

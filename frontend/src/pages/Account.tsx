@@ -1,7 +1,7 @@
 // src/pages/Account.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Navbar from "../components/Navbar"; // ✅ Import the shared navbar
+import Navbar from "../components/Navbar"; // ✅ Shared navbar
 
 export default function Account() {
   const [userInfo, setUserInfo] = useState({
@@ -12,13 +12,14 @@ export default function Account() {
   });
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false); // ✅ For delete modal
 
   const BASE_URL =
     window.location.hostname === "localhost"
       ? "http://127.0.0.1:8000"
       : "https://reflectra-backend.onrender.com";
 
-  // ✅ Fetch current user info
+  // ✅ Fetch user info
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -50,7 +51,7 @@ export default function Account() {
     fetchUserInfo();
   }, []);
 
-  // ✅ Handle profile update
+  // ✅ Save updates
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("Saving...");
@@ -77,6 +78,23 @@ export default function Account() {
     }
   };
 
+  // ✅ Delete account
+  const handleDeleteAccount = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      await axios.delete(`${BASE_URL}/api/delete_account/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      setMessage("🗑️ Account deleted successfully.");
+      window.location.href = "/";
+    } catch (err) {
+      console.error("Error deleting account:", err);
+      setMessage("❌ Failed to delete account.");
+    }
+  };
+
   if (loading)
     return (
       <div
@@ -95,7 +113,7 @@ export default function Account() {
 
   return (
     <>
-      <Navbar /> {/* ✅ Stays fixed in top-right corner */}
+      <Navbar />
       <div
         style={{
           height: "100vh",
@@ -126,7 +144,6 @@ export default function Account() {
             onChange={(e) => setUserInfo({ ...userInfo, username: e.target.value })}
             style={{ padding: "10px", borderRadius: "5px", border: "none" }}
           />
-
           <input
             type="email"
             placeholder="Email"
@@ -134,7 +151,6 @@ export default function Account() {
             onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })}
             style={{ padding: "10px", borderRadius: "5px", border: "none" }}
           />
-
           <textarea
             placeholder="Short bio..."
             value={userInfo.bio}
@@ -142,7 +158,6 @@ export default function Account() {
             rows={3}
             style={{ padding: "10px", borderRadius: "5px", border: "none" }}
           />
-
           <select
             value={userInfo.mood_preference}
             onChange={(e) =>
@@ -184,8 +199,90 @@ export default function Account() {
           </button>
         </form>
 
+        {/* ✅ Delete Account Button */}
+        <button
+          onClick={() => setShowConfirm(true)}
+          style={{
+            backgroundColor: "#ef4444",
+            color: "white",
+            padding: "10px",
+            borderRadius: "5px",
+            border: "none",
+            cursor: "pointer",
+            marginTop: "15px",
+            width: "300px",
+          }}
+        >
+          Delete Account
+        </button>
+
         {message && (
           <p style={{ marginTop: "15px", color: "#a5b4fc" }}>{message}</p>
+        )}
+
+        {/* ✅ Confirmation Modal */}
+        {showConfirm && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              backgroundColor: "rgba(0,0,0,0.7)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 1000,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "#1e293b",
+                padding: "30px",
+                borderRadius: "10px",
+                textAlign: "center",
+                width: "320px",
+              }}
+            >
+              <h2>Are you sure?</h2>
+              <p>This will permanently delete your account.</p>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-around",
+                  marginTop: "20px",
+                }}
+              >
+                <button
+                  onClick={handleDeleteAccount}
+                  style={{
+                    backgroundColor: "#ef4444",
+                    color: "white",
+                    padding: "10px 20px",
+                    borderRadius: "5px",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Yes, Delete
+                </button>
+                <button
+                  onClick={() => setShowConfirm(false)}
+                  style={{
+                    backgroundColor: "#334155",
+                    color: "white",
+                    padding: "10px 20px",
+                    borderRadius: "5px",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </>
