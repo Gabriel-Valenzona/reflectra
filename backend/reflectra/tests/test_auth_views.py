@@ -120,12 +120,19 @@ class AuthViewsTests(TestCase):
         self.client.force_authenticate(user=None)
 
     # -------- get_following --------
-    def test_get_following_list_ids(self):
+    def test_get_following_enriched(self):
         # alice follows bob
         Follow.objects.create(follower=self.alice, following=self.bob)
         url = reverse("get_following")
         self.client.force_authenticate(user=self.alice)
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertIn(self.bob.id, resp.data.get("following_ids", []))
+        self.assertIn("following", resp.data)
+        usernames = {row["username"] for row in resp.data["following"]}
+        self.assertIn("bob", usernames)
+        # enriched keys exist
+        sample = resp.data["following"][0]
+        for key in ("id", "username", "email", "bio", "mood_preference"):
+            self.assertIn(key, sample)
         self.client.force_authenticate(user=None)
+
