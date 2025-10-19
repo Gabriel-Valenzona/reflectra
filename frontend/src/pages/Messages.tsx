@@ -1,6 +1,6 @@
 // ===========================================
 // File: src/pages/Messages.tsx
-// Description: Inbox and Messages sections clearly separated with headers
+// Description: Show conversations only in Messages section, keep Inbox empty
 // ===========================================
 
 import { useState, useEffect } from "react";
@@ -10,6 +10,7 @@ import Navbar from "../components/Navbar";
 
 export default function Messages() {
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
+  const [hoveredChat, setHoveredChat] = useState<string | null>(null); // ✅ added for hover
   const [following, setFollowing] = useState<any[]>([]);
   const [inbox, setInbox] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
@@ -53,7 +54,7 @@ export default function Messages() {
     fetchFollowing();
   }, []);
 
-  // ✅ Fetch inbox
+  // ✅ Fetch inbox (recent conversations)
   useEffect(() => {
     const fetchInbox = async () => {
       try {
@@ -163,234 +164,205 @@ export default function Messages() {
             }}
           >
             <h3 style={{ marginBottom: "10px", color: "#94a3b8" }}>📥 Inbox</h3>
-
-            {inbox.length > 0 ? (
-              <div>
-                {inbox.map((chat, index) => {
-                  const partner = getChatPartner(chat);
-                  return (
-                    <div
-                      key={index}
-                      onClick={() => setSelectedChat({ username: partner })}
-                      style={{
-                        cursor: "pointer",
-                        backgroundColor:
-                          selectedChat?.username === partner
-                            ? "#334155"
-                            : "#1e293b",
-                        padding: "10px 12px",
-                        borderRadius: "8px",
-                        marginBottom: "8px",
-                        transition: "background-color 0.2s ease",
-                      }}
-                    >
-                      <strong style={{ color: "#cbd5e1" }}>{partner}</strong>
-                      <p
-                        style={{
-                          color: "#94a3b8",
-                          fontSize: "0.9rem",
-                          marginTop: "3px",
-                          overflow: "hidden",
-                          whiteSpace: "nowrap",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {chat.content}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p style={{ color: "#94a3b8" }}>
-                No messages yet — start chatting with someone you follow!
-              </p>
-            )}
+            <p style={{ color: "#94a3b8" }}>
+              You have no mail — check your messages below!
+            </p>
           </div>
 
-          {/* ✅ Divider / New Section Header */}
+          {/* ✅ Messages Section */}
           <div
             style={{
-              borderTop: "1px solid #334155",
               paddingTop: "10px",
-              marginTop: "10px",
             }}
           >
             <h3 style={{ marginBottom: "15px", color: "#94a3b8" }}>💬 Messages</h3>
-          </div>
 
-          {/* ✅ Message Section */}
-          <div
-            style={{
-              backgroundColor: "#0f172a",
-              borderRadius: "10px",
-              padding: "25px",
-              marginTop: "5px",
-            }}
-          >
-            {!selectedChat ? (
-              <>
-                <h2 style={{ color: "#cbd5e1", textAlign: "center" }}>
-                  Select a chat to start messaging
-                </h2>
+            <div style={{ padding: "25px" }}>
+              {!selectedChat ? (
+                <>
+                  <h2 style={{ color: "#cbd5e1", textAlign: "center" }}>
+                    Select a chat to start messaging
+                  </h2>
 
-                {following.length === 0 && inbox.length === 0 && (
-                  <p
+                  {inbox.length > 0 ? (
+                    <div style={{ marginTop: "15px" }}>
+                      {inbox.map((chat, index) => {
+                        const partner = getChatPartner(chat);
+                        return (
+                          <div
+                            key={index}
+                            onMouseEnter={() => setHoveredChat(partner)} // ✅ hover tracking
+                            onMouseLeave={() => setHoveredChat(null)}
+                            onClick={() => setSelectedChat({ username: partner })}
+                            style={{
+                              cursor: "pointer",
+                              backgroundColor:
+                                selectedChat?.username === partner
+                                  ? "#334155"
+                                  : hoveredChat === partner
+                                  ? "#2d3a55"
+                                  : "#1e293b",
+                              padding: "10px 12px",
+                              borderRadius: "8px",
+                              marginBottom: "8px",
+                              transition: "background-color 0.2s ease",
+                            }}
+                          >
+                            <strong style={{ color: "#cbd5e1" }}>{partner}</strong>
+                            <p
+                              style={{
+                                color: "#94a3b8",
+                                fontSize: "0.9rem",
+                                marginTop: "3px",
+                                overflow: "hidden",
+                                whiteSpace: "nowrap",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {chat.content}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : following.length === 0 ? (
+                    <p
+                      style={{
+                        color: "#94a3b8",
+                        textAlign: "center",
+                        marginTop: "10px",
+                      }}
+                    >
+                      You haven’t followed anyone yet — visit the Activity Feed to
+                      start connecting!
+                    </p>
+                  ) : (
+                    <p
+                      style={{
+                        color: "#94a3b8",
+                        textAlign: "center",
+                        marginTop: "10px",
+                      }}
+                    >
+                      No messages yet — start chatting with someone you follow!
+                    </p>
+                  )}
+                </>
+              ) : (
+                <div
+                  style={{
+                    backgroundColor: "#0f172a",
+                    padding: "20px",
+                    borderRadius: "10px",
+                    textAlign: "left",
+                  }}
+                >
+                  <h3 style={{ color: "#cbd5e1" }}>
+                    Chat with {selectedChat.username}
+                  </h3>
+
+                  {/* ✅ Message History */}
+                  <div
                     style={{
-                      color: "#94a3b8",
-                      textAlign: "center",
+                      maxHeight: "400px",
+                      overflowY: "auto",
+                      backgroundColor: "#1e293b",
+                      padding: "10px",
                       marginTop: "10px",
+                      borderRadius: "8px",
                     }}
                   >
-                    You haven’t followed anyone yet — visit the Activity Feed to
-                    start connecting!
-                  </p>
-                )}
+                    {messages.length > 0 ? (
+                      messages.map((msg, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            textAlign:
+                              msg.sender_username === currentUser
+                                ? "right"
+                                : "left",
+                            marginBottom: "10px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "inline-block",
+                              backgroundColor:
+                                msg.sender_username === currentUser
+                                  ? "#2563eb"
+                                  : "#334155",
+                              padding: "8px 12px",
+                              borderRadius: "8px",
+                              color: "white",
+                              maxWidth: "70%",
+                            }}
+                          >
+                            {msg.content}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p style={{ color: "#94a3b8" }}>
+                        No messages yet — start the conversation!
+                      </p>
+                    )}
+                  </div>
 
-                {following.length > 0 && inbox.length === 0 && (
-                  <div
+                  {/* ✅ Message Input */}
+                  <form
+                    onSubmit={handleSend}
                     style={{
                       marginTop: "15px",
                       display: "flex",
-                      flexWrap: "wrap",
-                      justifyContent: "center",
-                      gap: "12px",
+                      gap: "10px",
+                      alignItems: "center",
                     }}
                   >
-                    {following.slice(0, 4).map((user) => (
-                      <button
-                        key={user.id}
-                        onClick={() => setSelectedChat(user)}
-                        style={{
-                          backgroundColor: "#2563eb",
-                          border: "none",
-                          borderRadius: "8px",
-                          padding: "8px 14px",
-                          color: "white",
-                          cursor: "pointer",
-                          fontSize: "0.95rem",
-                        }}
-                      >
-                        💬 {user.username}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div
-                style={{
-                  backgroundColor: "#0f172a",
-                  padding: "20px",
-                  borderRadius: "10px",
-                  textAlign: "left",
-                }}
-              >
-                <h3 style={{ color: "#cbd5e1" }}>
-                  Chat with {selectedChat.username}
-                </h3>
+                    <input
+                      type="text"
+                      placeholder="Type a message..."
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: "10px",
+                        borderRadius: "8px",
+                        border: "1px solid #334155",
+                        backgroundColor: "#1e293b",
+                        color: "white",
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      style={{
+                        backgroundColor: "#2563eb",
+                        border: "none",
+                        borderRadius: "8px",
+                        padding: "10px 16px",
+                        color: "white",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Send
+                    </button>
+                  </form>
 
-                {/* ✅ Message History */}
-                <div
-                  style={{
-                    maxHeight: "400px",
-                    overflowY: "auto",
-                    backgroundColor: "#1e293b",
-                    padding: "10px",
-                    marginTop: "10px",
-                    borderRadius: "8px",
-                  }}
-                >
-                  {messages.length > 0 ? (
-                    messages.map((msg, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          textAlign:
-                            msg.sender_username === currentUser
-                              ? "right"
-                              : "left",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "inline-block",
-                            backgroundColor:
-                              msg.sender_username === currentUser
-                                ? "#2563eb"
-                                : "#334155",
-                            padding: "8px 12px",
-                            borderRadius: "8px",
-                            color: "white",
-                            maxWidth: "70%",
-                          }}
-                        >
-                          {msg.content}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p style={{ color: "#94a3b8" }}>
-                      No messages yet — start the conversation!
-                    </p>
-                  )}
-                </div>
-
-                {/* ✅ Message Input */}
-                <form
-                  onSubmit={handleSend}
-                  style={{
-                    marginTop: "15px",
-                    display: "flex",
-                    gap: "10px",
-                    alignItems: "center",
-                  }}
-                >
-                  <input
-                    type="text"
-                    placeholder="Type a message..."
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    style={{
-                      flex: 1,
-                      padding: "10px",
-                      borderRadius: "8px",
-                      border: "1px solid #334155",
-                      backgroundColor: "#1e293b",
-                      color: "white",
-                    }}
-                  />
                   <button
-                    type="submit"
+                    onClick={() => setSelectedChat(null)}
                     style={{
-                      backgroundColor: "#2563eb",
+                      marginTop: "15px",
+                      background: "none",
+                      color: "#94a3b8",
                       border: "none",
-                      borderRadius: "8px",
-                      padding: "10px 16px",
-                      color: "white",
                       cursor: "pointer",
+                      fontSize: "0.9rem",
                     }}
                   >
-                    Send
+                    ← Back to Messages
                   </button>
-                </form>
-
-                <button
-                  onClick={() => setSelectedChat(null)}
-                  style={{
-                    marginTop: "15px",
-                    background: "none",
-                    color: "#94a3b8",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  ← Back to Inbox
-                </button>
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
