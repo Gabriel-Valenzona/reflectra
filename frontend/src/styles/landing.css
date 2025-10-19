@@ -2,6 +2,12 @@
    Hero + About + tasteful motion. Variables expected:
    --primary-color, --secondary-color, --white, --header-font (optional) */
 
+:root{
+  --eyebrow-accent: #D9B86C;
+  --eyebrow-gap: 14px;
+  --eyebrow-line-w: clamp(56px, 8vw, 120px);
+}
+
 /* -------------- HERO (HEADER) -------------- */
 .header {
   position: relative;
@@ -128,7 +134,7 @@
 }
 
 /* (About only) watermark numerals (01/02/03) */
-.section__subheader::after {
+.about__content .section__subheader::after {
   position: absolute;
   top: 50%;
   left: 0;
@@ -140,6 +146,7 @@
   z-index: -1;
   content: "";
 }
+
 
 /* numeric watermarks per block (About only) */
 .about__content-1 .section__subheader::after { content: "01"; }
@@ -162,28 +169,51 @@
   line-height: 5rem;
 }
 
-/* Center the label and give right accent for HERO ONLY */
-.header__content .section__subheader {
-  display: inline-block;
-  margin-inline: auto;
-  text-align: left;
-  padding-right: 5rem;  /* right gold line */
+/* Hero eyebrow container should anchor the pseudo-lines */
+.header__content .section__subheader{
+  position: relative;             /* <-- key: lets ::before/::after place beside text */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--eyebrow-gap);
+  z-index: 2;                     /* above any hero overlays */
 }
 
-/* right accent line (hero only) with shimmer */
-.header__content .section__subheader::after {
+/* Right accent line (hero) — pinned to the RIGHT of the eyebrow text and clearly visible */
+.header__content .section__subheader{
+  position: relative; /* ensure ::after anchors to the text block */
+}
+
+.header__content .section__subheader::after{
+  position: absolute;
   content: "";
   top: 50%;
-  left: auto;
-  right: 0;
+  left: 100%;                         /* start at end of text */
+  margin-left: var(--eyebrow-gap);    /* spacing between text and line */
   transform: translateY(-50%);
-  width: 4rem;
-  height: 2px;
-  background: linear-gradient(90deg, rgba(233,198,117,0.2), var(--secondary-color), rgba(233,198,117,0.2));
+
+  width: var(--eyebrow-line-w);
+  height: 3px;                        /* a touch thicker for clarity */
+  background: linear-gradient(
+    90deg,
+    rgba(233,198,117,0.55),
+    var(--eyebrow-accent),
+    rgba(233,198,117,0.55)
+  );
   border-radius: 999px;
   background-size: 200% 100%;
   animation: shimmer 3.2s ease-in-out infinite;
+
+  /* visibility & layering */
+  opacity: 1 !important;
+  z-index: 5;                         /* above orbs/overlays */
+  filter: drop-shadow(0 0 3px rgba(0,0,0,.55));
+  pointer-events: none;
+  mix-blend-mode: normal;             /* avoid blending with bright pixels */
 }
+
+
+
+
 .shimmer::before {
   background: linear-gradient(90deg, rgba(233,198,117,0.2), var(--secondary-color), rgba(233,198,117,0.2));
   background-size: 200% 100%;
