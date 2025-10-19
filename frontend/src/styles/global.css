@@ -14,8 +14,9 @@
 
 /* Make the app fill the viewport and use your font family globally */
 html, body, #root {
-  height: 100%;
-  font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+height: 100%;
+background-color: var(--primary-color);
+font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 /* Container utility mirroring your original .section__container */

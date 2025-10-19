@@ -92,7 +92,7 @@ const Home: React.FC = () => {
         />
 
         {/* NAVIGATION BAR */}
-        <nav className="relative max-w-content mx-auto p-4 z-10">
+        <nav className="relative max-w-[1200px] mx-auto p-4 z-10">
           <div className="flex items-center justify-between">
             {/* Logo (left) */}
             <div className="flex-1">
@@ -229,7 +229,7 @@ const Home: React.FC = () => {
       {/* ABOUT SECTION */}
       <section
         id="about"
-        className="about bg-gradient-to-b from-transparent to-primary overflow-hidden"
+        className="about bg-[linear-gradient(to_bottom,rgba(255,255,255,0),#0a1e27_8rem)] overflow-hidden"
       >
         <div className="section__container about__container grid gap-20 md:grid-cols-2 md:items-center">
           {/* Block 1: image right on desktop */}
