@@ -1,4 +1,4 @@
-/* Exact-auth look, with your image behind a soft overlay */
+/* Exact-auth look, with your image behind a soft overlay + back button */
 
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 
@@ -14,20 +14,20 @@
   align-items: center;
   justify-content: center;
   padding: clamp(12px, 2vw, 32px);
-  isolation: isolate;          /* create a stacking context */
+  isolation: isolate; /* stacking context */
 }
 
-/*  Background image + overlay (kept ABOVE the body) */
+/* Background image + overlay */
+:root { --auth-overlay: 0.15; } /* tweak 0–0.25 to taste */
+
 .auth-bg{
   position: fixed;
   inset: 0;
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  z-index: 0;                  
+  z-index: 0;
 }
-:root { --auth-overlay: 0.15; }   /* try 0.10 – 0.20 */
-
 .auth-bg::after{
   content:"";
   position:absolute; inset:0;
@@ -38,6 +38,37 @@
   );
 }
 
+/* 🔙 Back button (frosted pill) */
+.auth-back{
+  position: fixed;
+  top: clamp(12px, 2.5vw, 28px);
+  left: clamp(12px, 2.5vw, 28px);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(255,255,255,0.18);
+  border: 1.5px solid rgba(255,255,255,0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  transition: transform .15s ease, background .2s ease, border-color .2s ease;
+}
+.auth-back:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.24);
+  border-color: #fff;
+}
+.auth-back:active{ transform: translateY(0); }
+.auth-back i{ font-size: 14px; }
 
 /* Card container */
 .container{
@@ -48,7 +79,7 @@
   max-width: 100%;
   position: relative;
   overflow: hidden;
-  z-index: 1;                  /* ✅ ensure above the bg */
+  z-index: 1; /* above bg */
   box-shadow:
     0 25px 45px rgba(0, 0, 0, 0.15),
     0 5px 15px rgba(0, 0, 0, 0.05);

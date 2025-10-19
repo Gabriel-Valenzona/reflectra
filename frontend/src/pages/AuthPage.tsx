@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "../styles/auth.css"; // ✅ your current path
-import bgImg from "../assets/imgs/auth-page-background.jpg"; // ✅ make sure this file exists
+import "../styles/auth.css"; // keep your current path
+import bgImg from "../assets/imgs/auth-page-background.jpg";
 
 type Mode = "signin" | "signup";
 
@@ -37,6 +37,15 @@ export default function AuthPage({ initialMode = "signin" }: Props) {
   const [regConfirm, setRegConfirm] = useState("");
   const [regLoading, setRegLoading] = useState(false);
   const [regMsg, setRegMsg] = useState("");
+
+  const handleBack = () => {
+    // If there’s history, go back; otherwise go home
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/");
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,12 +109,23 @@ export default function AuthPage({ initialMode = "signin" }: Props) {
 
   return (
     <div className="auth-root">
-      {/* ✅ Background image (CSS handles sizing + overlay) */}
+      {/* Background image */}
       <div
         className="auth-bg"
         style={{ backgroundImage: `url(${bgImg})` }}
         aria-hidden="true"
       />
+
+      {/* 🔙 Back button */}
+      <button
+        className="auth-back"
+        type="button"
+        onClick={handleBack}
+        aria-label="Go back"
+      >
+        <i className="fa-solid fa-arrow-left" aria-hidden="true" />
+        <span>Back</span>
+      </button>
 
       <div className={`container${isActive ? " active" : ""}`} id="container">
         {/* ---------- Sign Up ---------- */}
