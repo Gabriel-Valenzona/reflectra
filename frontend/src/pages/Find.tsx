@@ -1,9 +1,9 @@
 // ===========================================
 // File: src/pages/Find.tsx
-// Description: Page to search for users and follow/unfollow them
+// Description: Page to search for users (shows all users by default, horizontal layout)
 // ===========================================
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import Header from "../components/Header";
@@ -19,16 +19,13 @@ export default function Find() {
       ? "http://127.0.0.1:8000"
       : "https://reflectra-backend.onrender.com";
 
-  // 🔍 Handle search and call /api/find_users/
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-
+  // ✅ Fetch users (all or search)
+  const fetchUsers = async (query = "") => {
     setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(`${BASE_URL}/api/find_users/`, {
-        params: { q: searchQuery },
+        params: query ? { q: query } : {},
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data);
@@ -40,7 +37,18 @@ export default function Find() {
     }
   };
 
-  // 🧩 Handle follow/unfollow toggle (calls /api/follow/ or /api/unfollow/)
+  // ✅ Load all users by default
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // 🔍 Handle search submit
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchUsers(searchQuery);
+  };
+
+  // 🧩 Follow/Unfollow
   const handleFollowToggle = async (userId: number, currentlyFollowing: boolean) => {
     const token = localStorage.getItem("accessToken");
     const endpoint = currentlyFollowing
@@ -124,23 +132,34 @@ export default function Find() {
           </button>
         </form>
 
-        {/* Search Results */}
+        {/* Results */}
         {loading ? (
           <p>Loading...</p>
         ) : users.length > 0 ? (
-          users.map((user) => (
-            <UserCard
-              key={user.id}
-              username={user.username}
-              email={user.email}
-              bio={user.bio}
-              isFollowing={user.is_following}
-              onFollowToggle={() => handleFollowToggle(user.id, user.is_following)}
-            />
-          ))
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: "20px",
+              width: "80%",
+              maxWidth: "1000px",
+            }}
+          >
+            {users.map((user) => (
+              <UserCard
+                key={user.id}
+                username={user.username}
+                email={user.email}
+                bio={user.bio}
+                isFollowing={user.is_following}
+                onFollowToggle={() => handleFollowToggle(user.id, user.is_following)}
+              />
+            ))}
+          </div>
         ) : (
           <p style={{ fontSize: "1rem", color: "#94a3b8" }}>
-            Enter a name to find and follow other Reflectra users.
+            No users found. Try searching or check back later.
           </p>
         )}
       </div>
