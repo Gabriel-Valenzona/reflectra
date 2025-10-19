@@ -127,7 +127,7 @@ const Home: React.FC = () => {
           <div className="about__image about__image-1"><img src={about1} alt="about" /></div>
           <div className="about__content about__content-1 md:ml-24">
             <h3 className="section__subheader">WHAT IS REFLECTRA?</h3>
-            <h2 className="section__header">“Strava” for your mental well-being.</h2>
+            <h2 className="section__header">“Reflectra” for your mental well-being.</h2>
             <p className="text-textlight max-w-[60ch]">
               Reflectra turns your mental health and productivity journey into a measurable,
               motivating experience. Capture your thoughts, track your moods, and reflect on
