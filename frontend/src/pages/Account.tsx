@@ -179,41 +179,54 @@ export default function Account() {
 
         {/* Following List */}
         <div
-          style={{
+        style={{
             backgroundColor: "#1e293b",
             borderRadius: "10px",
             padding: "20px",
-            maxWidth: "900px",
+            maxWidth: "700px",
             margin: "0 auto 40px",
-          }}
+        }}
         >
-          <h2>👥 Following</h2>
-          {following.length > 0 ? (
+        <h2>👥 Following</h2>
+        {following.length > 0 ? (
+            following.map((user) => (
             <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                justifyContent: "center",
-                gap: "20px",
-                marginTop: "15px",
-              }}
+                key={user.id}
+                style={{
+                backgroundColor: "#0f172a",
+                padding: "15px",
+                borderRadius: "8px",
+                marginBottom: "15px",
+                }}
             >
-              {following.map((user) => (
-                <UserCard
-                  key={user.id}
-                  id={user.id}
-                  username={user.username}
-                  email={user.email}
-                  bio={user.bio}
-                  isFollowing={true}
-                  onFollowToggle={() => handleFollowToggle(user.id, true)}
-                  onClick={() => {}}
-                />
-              ))}
+                <p style={{ fontSize: "1.1rem", fontWeight: "600", marginBottom: "5px" }}>
+                {user.username}
+                </p>
+                <p style={{ fontSize: "0.9rem", color: "#94a3b8", marginBottom: "8px" }}>
+                {user.email || "No email provided."}
+                </p>
+                <p style={{ fontSize: "0.9rem", color: "#94a3b8" }}>
+                {user.bio || "No bio provided."}
+                </p>
+                <button
+                onClick={() => handleFollowToggle(user.id, true)}
+                style={{
+                    marginTop: "10px",
+                    backgroundColor: "#475569",
+                    border: "none",
+                    borderRadius: "5px",
+                    padding: "6px 12px",
+                    color: "white",
+                    cursor: "pointer",
+                }}
+                >
+                Unfollow
+                </button>
             </div>
-          ) : (
+            ))
+        ) : (
             <p style={{ color: "#94a3b8" }}>You’re not following anyone yet.</p>
-          )}
+        )}
         </div>
 
         {/* User’s Posts */}
