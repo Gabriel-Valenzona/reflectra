@@ -1,6 +1,6 @@
 // ===========================================
 // File: src/pages/Messages.tsx
-// Description: Integrated frontend for messaging with backend routes
+// Description: Separate inbox + proper chat partner display
 // ===========================================
 
 import { useState, useEffect } from "react";
@@ -11,15 +11,33 @@ import Navbar from "../components/Navbar";
 export default function Messages() {
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
   const [following, setFollowing] = useState<any[]>([]);
+  const [inbox, setInbox] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [messageText, setMessageText] = useState("");
+  const [currentUser, setCurrentUser] = useState<string>("");
 
   const BASE_URL =
     window.location.hostname === "localhost"
       ? "http://127.0.0.1:8000"
       : "https://reflectra-backend.onrender.com";
 
-  // ✅ Fetch users the current user follows
+  // ✅ Fetch current logged-in user
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const res = await axios.get(`${BASE_URL}/api/userinfo/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCurrentUser(res.data.username);
+      } catch (err) {
+        console.error("Error fetching user info:", err);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  // ✅ Fetch following
   useEffect(() => {
     const fetchFollowing = async () => {
       try {
@@ -33,6 +51,22 @@ export default function Messages() {
       }
     };
     fetchFollowing();
+  }, []);
+
+  // ✅ Fetch inbox (recent conversations)
+  useEffect(() => {
+    const fetchInbox = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await axios.get(`${BASE_URL}/api/inbox/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setInbox(response.data || []);
+      } catch (err) {
+        console.error("Error fetching inbox:", err);
+      }
+    };
+    fetchInbox();
   }, []);
 
   // ✅ Fetch conversation when user selects a chat
@@ -69,11 +103,25 @@ export default function Messages() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Add new message locally
       setMessages((prev) => [...prev, response.data]);
       setMessageText("");
+
+      // Refresh inbox after sending
+      const inboxRes = await axios.get(`${BASE_URL}/api/inbox/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setInbox(inboxRes.data || []);
     } catch (err) {
       console.error("Error sending message:", err);
+    }
+  };
+
+  // ✅ Helper: Determine chat partner name for inbox
+  const getChatPartner = (msg: any) => {
+    if (msg.sender_username === currentUser) {
+      return msg.receiver_username;
+    } else {
+      return msg.sender_username;
     }
   };
 
@@ -97,7 +145,7 @@ export default function Messages() {
         <div
           style={{
             width: "90%",
-            maxWidth: "800px",
+            maxWidth: "900px",
             backgroundColor: "#1e293b",
             borderRadius: "12px",
             boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
@@ -116,52 +164,57 @@ export default function Messages() {
             }}
           >
             <h3 style={{ marginBottom: "10px", color: "#94a3b8" }}>📥 Inbox</h3>
-            <p style={{ color: "#94a3b8" }}>No mail.</p>
+
+            {inbox.length > 0 ? (
+              <div>
+                {inbox.map((chat, index) => {
+                  const partner = getChatPartner(chat);
+                  return (
+                    <div
+                      key={index}
+                      onClick={() => setSelectedChat({ username: partner })}
+                      style={{
+                        cursor: "pointer",
+                        backgroundColor:
+                          selectedChat?.username === partner
+                            ? "#334155"
+                            : "#1e293b",
+                        padding: "10px 12px",
+                        borderRadius: "8px",
+                        marginBottom: "8px",
+                        transition: "background-color 0.2s ease",
+                      }}
+                    >
+                      <strong style={{ color: "#cbd5e1" }}>{partner}</strong>
+                      <p
+                        style={{
+                          color: "#94a3b8",
+                          fontSize: "0.9rem",
+                          marginTop: "3px",
+                          overflow: "hidden",
+                          whiteSpace: "nowrap",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {chat.content}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p style={{ color: "#94a3b8" }}>No messages yet.</p>
+            )}
           </div>
 
-          {/* ✅ Messages Section */}
+          {/* ✅ Message Section */}
           <div style={{ textAlign: "center" }}>
             {!selectedChat ? (
               <>
-                <h2 style={{ color: "#cbd5e1" }}>Your Messages</h2>
-
-                {following.length > 0 ? (
-                  <>
-                    <p style={{ color: "#94a3b8", marginTop: "10px" }}>
-                      No active chats yet — maybe you can try messaging:
-                    </p>
-                    <div
-                      style={{
-                        marginTop: "15px",
-                        display: "flex",
-                        flexWrap: "wrap",
-                        justifyContent: "center",
-                        gap: "12px",
-                      }}
-                    >
-                      {following.slice(0, 4).map((user) => (
-                        <button
-                          key={user.id}
-                          onClick={() => setSelectedChat(user)}
-                          style={{
-                            backgroundColor: "#2563eb",
-                            border: "none",
-                            borderRadius: "8px",
-                            padding: "8px 14px",
-                            color: "white",
-                            cursor: "pointer",
-                            fontSize: "0.95rem",
-                          }}
-                        >
-                          💬 {user.username}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                ) : (
+                <h2 style={{ color: "#cbd5e1" }}>Select a chat to start messaging</h2>
+                {following.length === 0 && (
                   <p style={{ color: "#94a3b8", marginTop: "10px" }}>
-                    No active chats yet — try following people on the Activity
-                    Feed to start connecting!
+                    You haven’t followed anyone yet — visit the Activity Feed to start connecting!
                   </p>
                 )}
               </>
@@ -195,9 +248,9 @@ export default function Messages() {
                         key={index}
                         style={{
                           textAlign:
-                            msg.sender_username === selectedChat.username
-                              ? "left"
-                              : "right",
+                            msg.sender_username === currentUser
+                              ? "right"
+                              : "left",
                           marginBottom: "10px",
                         }}
                       >
@@ -205,9 +258,9 @@ export default function Messages() {
                           style={{
                             display: "inline-block",
                             backgroundColor:
-                              msg.sender_username === selectedChat.username
-                                ? "#334155"
-                                : "#2563eb",
+                              msg.sender_username === currentUser
+                                ? "#2563eb"
+                                : "#334155",
                             padding: "8px 12px",
                             borderRadius: "8px",
                             color: "white",
