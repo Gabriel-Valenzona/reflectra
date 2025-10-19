@@ -1,6 +1,14 @@
-/* Exact-auth look, with your image behind a soft overlay + back button */
-
+/* Auth page + entry animations */
+/* ---------------------------------------------------- */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+:root{
+  --auth-overlay: 0.12;                 /* overlay strength (0–0.25) */
+  --anim-bg-in: 900ms;
+  --anim-card-in: 800ms;
+  --anim-stagger: 90ms;
+  --ease-out: cubic-bezier(0.22,1,0.36,1);
+}
 
 .auth-root, .auth-root * {
   font-family: 'Montserrat', sans-serif;
@@ -14,12 +22,10 @@
   align-items: center;
   justify-content: center;
   padding: clamp(12px, 2vw, 32px);
-  isolation: isolate; /* stacking context */
+  isolation: isolate; /* stacking context so bg sits underneath */
 }
 
 /* Background image + overlay */
-:root { --auth-overlay: 0.15; } /* tweak 0–0.25 to taste */
-
 .auth-bg{
   position: fixed;
   inset: 0;
@@ -27,6 +33,10 @@
   background-size: cover;
   background-repeat: no-repeat;
   z-index: 0;
+
+  /* entry starting state */
+  opacity: 0;
+  transform: scale(1.06);
 }
 .auth-bg::after{
   content:"";
@@ -38,7 +48,16 @@
   );
 }
 
-/* 🔙 Back button (frosted pill) */
+/* Animate the background on mount */
+.is-mounted .auth-bg{
+  animation: bg-reveal var(--anim-bg-in) var(--ease-out) forwards;
+}
+@keyframes bg-reveal{
+  from{ opacity: 0; transform: scale(1.06); }
+  to{   opacity: 1; transform: scale(1); }
+}
+
+/* Back button (frosted pill) */
 .auth-back{
   position: fixed;
   top: clamp(12px, 2.5vw, 28px);
@@ -61,12 +80,19 @@
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(0,0,0,.18);
   transition: transform .15s ease, background .2s ease, border-color .2s ease;
+
+  /* entry: slide & fade a bit later than bg */
+  opacity: 0;
+  transform: translateY(-8px);
 }
-.auth-back:hover{
-  transform: translateY(-1px);
-  background: rgba(255,255,255,0.24);
-  border-color: #fff;
+.is-mounted .auth-back{
+  animation: back-in 600ms var(--ease-out) 250ms forwards;
 }
+@keyframes back-in{
+  from{ opacity: 0; transform: translateY(-8px); }
+  to{   opacity: 1; transform: translateY(0); }
+}
+.auth-back:hover{ transform: translateY(-1px); background: rgba(255,255,255,0.24); border-color:#fff; }
 .auth-back:active{ transform: translateY(0); }
 .auth-back i{ font-size: 14px; }
 
@@ -79,10 +105,25 @@
   max-width: 100%;
   position: relative;
   overflow: hidden;
-  z-index: 1; /* above bg */
+  z-index: 1;
   box-shadow:
     0 25px 45px rgba(0, 0, 0, 0.15),
     0 5px 15px rgba(0, 0, 0, 0.05);
+
+  /* entry starting state */
+  opacity: 0;
+  transform: translateY(28px) scale(.985);
+  filter: blur(6px);
+}
+
+/* Card rise-in */
+.is-mounted .container{
+  animation: card-in var(--anim-card-in) var(--ease-out) 120ms forwards;
+}
+@keyframes card-in{
+  0%   { opacity: 0; transform: translateY(28px) scale(.985); filter: blur(6px); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
 
 .container p{
@@ -91,9 +132,7 @@
   letter-spacing: 0.3px;
   margin: 20px 0;
 }
-
 .container span{ font-size: 12px; }
-
 .container a{
   color: #333;
   font-size: 13px;
@@ -145,45 +184,26 @@
   outline: none;
 }
 
-/* panel slide */
+/* panel slide (from your original) */
 .form-container{
   position: absolute;
   top: 0;
   height: 100%;
   transition: all 0.6s ease-in-out;
 }
-
-.sign-in{
-  left: 0;
-  width: 50%;
-  z-index: 2;
-}
-
+.sign-in{ left: 0; width: 50%; z-index: 2; }
 .container.active .sign-in{ transform: translateX(100%); }
-
-.sign-up{
-  left: 0;
-  width: 50%;
-  opacity: 0;
-  z-index: 1;
-}
-
+.sign-up{ left: 0; width: 50%; opacity: 0; z-index: 1; }
 .container.active .sign-up{
-  transform: translateX(100%);
-  opacity: 1;
-  z-index: 5;
-  animation: move 0.6s;
+  transform: translateX(100%); opacity: 1; z-index: 5; animation: move 0.6s;
 }
-
 @keyframes move{
   0%, 49.99%{ opacity: 0; z-index: 1; }
   50%, 100%{ opacity: 1; z-index: 5; }
 }
 
 /* Social icons */
-.social-icons{
-  margin: 20px 0;
-}
+.social-icons{ margin: 20px 0; }
 .social-icons a{
   border: 1px solid #ccc;
   border-radius: 12px;
@@ -193,22 +213,33 @@
   margin: 0 6px;
   width: 40px;
   height: 40px;
+
+  /* entry stagger start */
+  opacity: 0;
+  transform: translateY(8px) scale(.96);
+}
+/* Staggered pop for the 4 icons */
+.is-mounted .social-icons a:nth-child(1){ animation: pop-in 420ms ease-out 260ms forwards; }
+.is-mounted .social-icons a:nth-child(2){ animation: pop-in 420ms ease-out calc(260ms + var(--anim-stagger)) forwards; }
+.is-mounted .social-icons a:nth-child(3){ animation: pop-in 420ms ease-out calc(260ms + var(--anim-stagger)*2) forwards; }
+.is-mounted .social-icons a:nth-child(4){ animation: pop-in 420ms ease-out calc(260ms + var(--anim-stagger)*3) forwards; }
+
+@keyframes pop-in{
+  from{ opacity: 0; transform: translateY(8px) scale(.96); }
+  to  { opacity: 1; transform: translateY(0) scale(1); }
 }
 .social-icons i{ font-size: 18px; }
 
 /* Purple rail */
 .toggle-container{
   position: absolute;
-  top: 0;
-  left: 50%;
-  width: 50%;
-  height: 100%;
+  top: 0; left: 50%;
+  width: 50%; height: 100%;
   overflow: hidden;
   transition: all 0.6s ease-in-out;
   border-radius: 150px 0 0 100px;
   z-index: 1000;
 }
-
 .container.active .toggle-container{
   transform: translateX(-100%);
   border-radius: 0 150px 100px 0;
@@ -224,29 +255,47 @@
   transform: translateX(0);
   transition: all 0.6s ease-in-out;
 }
+/* Sheen sweep once after mount */
+.toggle::after{
+  content:"";
+  position:absolute;
+  top:0; bottom:0; width: 180px;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.35) 50%, rgba(255,255,255,0) 100%);
+  transform: translateX(-140%) skewX(-20deg);
+  opacity: 0;
+  pointer-events: none;
+}
+.is-mounted .toggle::after{
+  animation: sheen 900ms ease-out 850ms forwards;
+}
+@keyframes sheen{
+  0%   { transform: translateX(-140%) skewX(-20deg); opacity: 0; }
+  15%  { opacity: .7; }
+  100% { transform: translateX(160%)  skewX(-20deg); opacity: 0; }
+}
 
 .container.active .toggle{ transform: translateX(50%); }
 
+/* Panels inside purple rail */
 .toggle-panel{
   position: absolute;
-  width: 50%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  padding: 0 30px;
-  text-align: center;
-  top: 0;
-  transform: translateX(0);
-  transition: all 0.6s ease-in-out;
+  width: 50%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; padding: 0 30px; text-align: center;
+  top: 0; transform: translateX(0); transition: all 0.6s ease-in-out;
 }
-
 .toggle-left{ transform: translateX(-200%); }
 .container.active .toggle-left{ transform: translateX(0); }
-
-.toggle-right{
-  right: 0;
-  transform: translateX(0);
-}
+.toggle-right{ right: 0; transform: translateX(0); }
 .container.active .toggle-right{ transform: translateX(200%); }
+
+/* Accessibility: respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .auth-bg, .container, .auth-back, .social-icons a, .toggle::after{
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+}

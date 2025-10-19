@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "../styles/auth.css"; // keep your current path
+import "../styles/auth.css";
 import bgImg from "../assets/imgs/auth-page-background.jpg";
 
 type Mode = "signin" | "signup";
@@ -22,7 +22,14 @@ export default function AuthPage({ initialMode = "signin" }: Props) {
   );
 
   const [mode, setMode] = useState<Mode>(initialMode);
+  const [mounted, setMounted] = useState(false);
   const isActive = mode === "signup";
+
+  // Trigger entry animation once after initial paint
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   // ---------- Sign In ----------
   const [loginInput, setLoginInput] = useState("");
@@ -39,12 +46,8 @@ export default function AuthPage({ initialMode = "signin" }: Props) {
   const [regMsg, setRegMsg] = useState("");
 
   const handleBack = () => {
-    // If there’s history, go back; otherwise go home
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate("/");
-    }
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/");
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -108,7 +111,7 @@ export default function AuthPage({ initialMode = "signin" }: Props) {
   };
 
   return (
-    <div className="auth-root">
+    <div className={`auth-root ${mounted ? "is-mounted" : ""}`}>
       {/* Background image */}
       <div
         className="auth-bg"
@@ -116,7 +119,7 @@ export default function AuthPage({ initialMode = "signin" }: Props) {
         aria-hidden="true"
       />
 
-      {/* 🔙 Back button */}
+      {/* Back button */}
       <button
         className="auth-back"
         type="button"
