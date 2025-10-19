@@ -1,5 +1,5 @@
 // src/pages/Home.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
 import ScrollReveal from "scrollreveal";
@@ -14,6 +14,14 @@ import "../styles/landing.css";
 const Home: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const closeMenu = () => setIsOpen(false);
+
+  // --- subtle hero parallax/tilt variables ---
+  const headerRef = useRef<HTMLElement | null>(null);
+  const prefersReducedMotion = useRef<boolean>(false);
+
+  useEffect(() => {
+    prefersReducedMotion.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
 
   useEffect(() => {
     const scrollRevealOption = { distance: "50px", origin: "bottom" as const, duration: 1000 };
@@ -30,17 +38,52 @@ const Home: React.FC = () => {
     ScrollReveal().reveal(".about__content .about__btn", { ...scrollRevealOption, delay: 2000 });
   }, []);
 
+  // Mouse tilt for hero (no library; CSS variables)
+  const onHeroMouseMove = (e: React.MouseEvent) => {
+    if (prefersReducedMotion.current) return;
+    const el = headerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;   // 0 .. 1
+    const y = (e.clientY - rect.top) / rect.height;   // 0 .. 1
+    const tiltX = (y - 0.5) * -6; // range ~ -3..3
+    const tiltY = (x - 0.5) * 6;  // range ~ -3..3
+    el.style.setProperty("--tilt-x", `${tiltX.toFixed(2)}deg`);
+    el.style.setProperty("--tilt-y", `${tiltY.toFixed(2)}deg`);
+    el.style.setProperty("--mouse-x", `${(x * 100).toFixed(2)}%`);
+    el.style.setProperty("--mouse-y", `${(y * 100).toFixed(2)}%`);
+  };
+
+  const onHeroMouseLeave = () => {
+    const el = headerRef.current;
+    if (!el) return;
+    el.style.setProperty("--tilt-x", `0deg`);
+    el.style.setProperty("--tilt-y", `0deg`);
+  };
+
   return (
     <div className="relative min-h-screen text-white bg-primary">
       <header
+        ref={headerRef as any}
         id="home"
         className="header"
         style={
           {
             ["--header-image" as any]: `url(${headerImg})`,
+            ["--tilt-x" as any]: "0deg",
+            ["--tilt-y" as any]: "0deg",
           } as React.CSSProperties
         }
+        onMouseMove={onHeroMouseMove}
+        onMouseLeave={onHeroMouseLeave}
       >
+        {/* decorative floating orbs */}
+        <div className="header__orbs" aria-hidden="true">
+          <span className="orb orb--1" />
+          <span className="orb orb--2" />
+          <span className="orb orb--3" />
+        </div>
+
         {/* NAVBAR */}
         <nav className="relative max-w-[1200px] mx-auto p-4 z-10">
           <div className="flex items-center justify-between">
@@ -57,7 +100,11 @@ const Home: React.FC = () => {
             </ul>
 
             <div className="hidden md:flex flex-1 justify-end">
-              <Link to="/login" className="bg-transparent hover:bg-white/10 transition rounded px-4 py-2 inline-flex items-center gap-2" aria-label="Account">
+              <Link
+                to="/login"
+                className="bg-transparent hover:bg-white/10 transition rounded px-4 py-2 inline-flex items-center gap-2"
+                aria-label="Account"
+              >
                 <span><i className="ri-user-line" /></span> Account
               </Link>
             </div>
@@ -76,7 +123,7 @@ const Home: React.FC = () => {
           <ul
             id="nav-links"
             className={clsx(
-              "md:hidden absolute right-4 top-[68px] w-[calc(100%-2rem)] max-w-[350px] p-8 rounded-lg flex flex-col items-center justify-center gap-6 bg-primary/80 transition-opacity duration-300",
+              "md:hidden absolute right-4 top-[68px] w-[calc(100%-2rem)] max-w-[350px] p-8 rounded-lg flex flex-col items-center justify-center gap-6 bg-primary/80 transition-opacity duration-300 backdrop-blur",
               isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
             )}
             onClick={closeMenu}
@@ -85,7 +132,11 @@ const Home: React.FC = () => {
             <li><a href="#features" className="hover:text-secondary font-medium">Features</a></li>
             <li><a href="#analytics" className="hover:text-secondary font-medium">Analytics</a></li>
             <li className="w-full pt-2 border-t border-white/10">
-              <Link to="/login" className="w-full bg-transparent hover:bg-white/10 transition rounded px-4 py-2 inline-flex items-center justify-center gap-2" aria-label="Account">
+              <Link
+                to="/login"
+                className="w-full bg-transparent hover:bg-white/10 transition rounded px-4 py-2 inline-flex items-center justify-center gap-2"
+                aria-label="Account"
+              >
                 <span><i className="ri-user-line" /></span> Account
               </Link>
             </li>
@@ -94,13 +145,15 @@ const Home: React.FC = () => {
 
         {/* HERO CONTENT */}
         <div className="section__container header__container">
-          <div className="header__content text-center">
-            <h3 className="section__subheader">A REFLECTION TOOL FOR GROWTH</h3>
-            <h1 className="section__header">
-              “One who thinks their journey is over, is truly lost.”
+          <div className="header__content text-center hero-tilt">
+            <h3 className="section__subheader shimmer">A REFLECTION TOOL FOR GROWTH</h3>
+
+            <h1 className="section__header quote" aria-live="polite">
+              <span className="quote__inner">“One who thinks their journey is over, is truly lost.”</span>
             </h1>
+
             <div className="scroll__btn mt-6">
-              <a href="#about" className="inline-flex items-center gap-2 hover:text-secondary">
+              <a href="#about" className="inline-flex items-center gap-2 hover:text-secondary magnet" aria-label="Explore Reflectra">
                 Explore Reflectra
                 <span><i className="ri-arrow-down-line" /></span>
               </a>
@@ -110,11 +163,11 @@ const Home: React.FC = () => {
           {/* SOCIALS */}
           <div className="header__socials hidden md:flex">
             <span className="-rotate-90">Follow us</span>
-            <a href="#" className="-rotate-90 hover:text-secondary">
+            <a href="#" aria-label="Instagram" className="-rotate-90 hover:text-secondary social-kite">
               <i className="ri-instagram-line" />
             </a>
-            <a href="#" className="-rotate-90 hover:text-secondary">
-              <i className="ri-twitter-x-fill" /> {/* X logo */}
+            <a href="#" aria-label="X (formerly Twitter)" className="-rotate-90 hover:text-secondary social-kite">
+              <i className="ri-twitter-x-fill" />
             </a>
           </div>
         </div>

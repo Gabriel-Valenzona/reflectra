@@ -1,16 +1,17 @@
 /* src/styles/landing.css
-   Mirrors the vanilla hero + about behavior for React/Tailwind.
-   Uses CSS variables defined in your global CSS (primary, secondary, etc.). */
+   Hero + About + tasteful motion. Variables expected:
+   --primary-color, --secondary-color, --white, --header-font (optional) */
 
 /* -------------- HERO (HEADER) -------------- */
 .header {
   position: relative;
   height: 100vh;
-  z-index: 0;          /* keep ::before above page bg */
-  isolation: isolate;  /* ensure ::before stays in header stacking context */
+  z-index: 0;
+  isolation: isolate;
+  perspective: 1200px; /* for subtle tilt */
 }
 
-/* Extend 15rem below the header and sit BEHIND header content, not behind the page */
+/* Background image + radial blend; extends below header */
 .header::before {
   position: absolute;
   content: "";
@@ -26,34 +27,94 @@
   background-repeat: no-repeat;
   z-index: -1;
   pointer-events: none;
+  transition: transform 600ms cubic-bezier(.2,.8,.2,1);
+  transform: translateZ(0);
 }
 
-/* -------------- ABOUT GRADIENT -------------- */
-.about {
-  background-image: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0),
-    var(--primary-color) 8rem
-  );
-  overflow: hidden;
+/* Orbs (ambient) */
+.header__orbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.orb {
+  position: absolute;
+  width: 22vmin;
+  height: 22vmin;
+  border-radius: 9999px;
+  filter: blur(20px);
+  opacity: 0.15;
+  background: radial-gradient(circle at 30% 30%, #fff, transparent 60%);
+  animation: float 18s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+.orb--1 { top: 12%; left: 10%; animation-delay: 0s; }
+.orb--2 { bottom: 8%; right: 12%; animation-delay: 4s; }
+.orb--3 { top: 35%; right: 25%; animation-delay: 8s; }
+@keyframes float {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(2rem, -1.5rem, 0) scale(1.05); }
 }
 
-/* -------------- IMAGES (match vanilla look) -------------- */
-.about__image img {
-  max-width: 400px;
-  margin-inline: auto;
-  border-radius: 5px;
-  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.4);
+/* container centered like the vanilla */
+.header__container {
+  position: relative;
+  isolation: isolate;
+  height: calc(100% - 75px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-left: 0;
 }
+
+/* Tilt target */
+.hero-tilt {
+  transform-style: preserve-3d;
+  transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 400ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* left vertical socials */
+.header__socials {
+  position: absolute;
+  left: 0;
+  /* ↓ move the block lower; responsive so it won't overlap the quote */
+  top: clamp(60%, 68vh, 76%);
+  align-items: center;
+  gap: 1rem;
+  color: var(--white);
+  transform: translateX(calc(-50% + 1rem)) rotate(90deg);
+}
+
+/* optional fine-tuning on very large screens */
+@media (min-width: 1280px) {
+  .header__socials {
+    top: 70%;
+  }
+}
+
+/* tiny hover lift for icons (unchanged) */
+.header__socials a { font-size: 1.6rem; line-height: 1; }
+.header__socials a:hover { color: var(--secondary-color); }
+
+/* tiny hover lift for icons (feels 'airy') */
+.social-kite {
+  transition: transform 300ms ease, color 300ms ease;
+}
+.social-kite:hover { transform: translateY(-2px); }
 
 /* -------------- SUBHEADER DECOR (general) -------------- */
 .section__subheader {
   position: relative;
   isolation: isolate;
-  padding-left: 5rem;     /* space for the LEFT horizontal gold line */
+  padding-left: 5rem;     /* left gold line */
   letter-spacing: 2px;
   color: var(--secondary-color);
 }
+
+/* left accent line */
 .section__subheader::before {
   position: absolute;
   content: "";
@@ -63,10 +124,11 @@
   height: 2px;
   width: 4rem;
   background-color: var(--secondary-color);
+  border-radius: 999px;
 }
+
+/* (About only) watermark numerals (01/02/03) */
 .section__subheader::after {
-  /* In ABOUT, this becomes the big watermark (01/02/03).
-     We'll override it ONLY inside the hero to be the RIGHT gold line. */
   position: absolute;
   top: 50%;
   left: 0;
@@ -84,7 +146,7 @@
 .about__content-2 .section__subheader::after { content: "02"; }
 .about__content-3 .section__subheader::after { content: "03"; }
 
-/* -------------- TYPOGRAPHY (match vanilla headings) -------------- */
+/* -------------- TYPOGRAPHY -------------- */
 .section__header {
   margin-bottom: 1rem;
   font-size: 3rem;
@@ -93,81 +155,130 @@
   color: var(--white);
 }
 
-/* -------------- HEADER LAYOUT (CENTER like vanilla) -------------- */
-.header__container {
-  position: relative;
-  isolation: isolate;
-  height: calc(100% - 75px);
-  display: flex;
-  align-items: center;
-  justify-content: center; /* center horizontally */
-  text-align: center;      /* center text */
-  padding-left: 0;
-}
-
-.header__content {
-  max-width: 700px;
-  margin-left: 0;
-}
-
+/* Hero heading larger by default; scales up on hover */
 .header__content .section__header {
   font-size: 4rem;
   font-weight: 600;
   line-height: 5rem;
 }
 
-/* Center the label as a compact unit */
+/* Center the label and give right accent for HERO ONLY */
 .header__content .section__subheader {
-  display: inline-block;   /* shrink-to-fit so it can be centered */
-  margin-inline: auto;     /* center the subheader block itself */
-  text-align: left;        /* keep the text left inside the block */
-  padding-right: 5rem;     /* space for the RIGHT horizontal gold line */
+  display: inline-block;
+  margin-inline: auto;
+  text-align: left;
+  padding-right: 5rem;  /* right gold line */
 }
 
-/* --- RIGHT horizontal accent (hero only) --- */
+/* right accent line (hero only) with shimmer */
 .header__content .section__subheader::after {
-  content: "";                     /* override ABOUT watermark 01/02/03 in hero */
+  content: "";
   top: 50%;
   left: auto;
-  right: 0;                        /* stick to the right side of the label */
-  transform: translateY(-50%);     /* horizontal line, centered vertically */
+  right: 0;
+  transform: translateY(-50%);
   width: 4rem;
   height: 2px;
-  background-color: var(--secondary-color);
-  opacity: 1;
+  background: linear-gradient(90deg, rgba(233,198,117,0.2), var(--secondary-color), rgba(233,198,117,0.2));
+  border-radius: 999px;
+  background-size: 200% 100%;
+  animation: shimmer 3.2s ease-in-out infinite;
+}
+.shimmer::before {
+  background: linear-gradient(90deg, rgba(233,198,117,0.2), var(--secondary-color), rgba(233,198,117,0.2));
+  background-size: 200% 100%;
+  animation: shimmer 3.2s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* -------------- QUOTE INTERACTION -------------- */
+.quote {
+  position: relative;
+  display: inline-block;
+  will-change: transform, letter-spacing, text-shadow;
+  transition: transform 400ms cubic-bezier(.2,.8,.2,1), letter-spacing 400ms ease, text-shadow 400ms ease, filter 400ms ease;
+}
+.quote__inner {
+  position: relative;
   z-index: 1;
 }
 
-/* left-side vertical socials */
-.header__socials {
+/* soft radial glow that follows mouse (based on --mouse-x/--mouse-y) */
+.quote::after {
+  content: "";
   position: absolute;
-  left: 0;
+  inset: -10%;
+  background: radial-gradient(180px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(233,198,117,0.15), transparent 60%);
+  opacity: 0;
+  transition: opacity 300ms ease;
+  filter: blur(12px);
+  pointer-events: none;
+}
+
+/* on hover: slightly bigger, tiny tracking, gentle glow */
+.quote:hover {
+  transform: scale(1.06);
+  letter-spacing: 0.5px;
+  text-shadow: 0 8px 24px rgba(233,198,117,0.25);
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.25));
+}
+.quote:hover::after { opacity: 1; }
+
+/* -------------- SCROLL CUE -------------- */
+.scroll__btn a {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 1rem;
-  color: var(--white);
-  transform: translateX(calc(-50% + 1rem)) rotate(90deg);
+  gap: .5rem;
+  padding: .5rem 1rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  transition: transform 200ms ease, background 200ms ease, box-shadow 200ms ease;
+  animation: throb 2.2s ease-in-out infinite;
 }
-.header__socials a { font-size: 1.6rem; line-height: 1; }
-.header__socials a:hover { color: var(--secondary-color); }
-
-/* Mobile tidy: hide the small accents for clarity */
-@media (max-width: 768px) {
-  .header__container {
-    justify-content: center;
-    text-align: center;
-    padding-left: 0;
-  }
-  .header__content .section__subheader {
-    padding-left: 0;
-    padding-right: 0;
-  }
-  .header__content .section__subheader::before,
-  .header__content .section__subheader::after {
-    display: none;
-  }
+.scroll__btn a:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.1);
+  box-shadow: 0 8px 20px rgba(233,198,117,0.18);
+}
+@keyframes throb {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
-/* -------------- DESKTOP GRID BEHAVIOR (vanilla parity) -------------- */
+/* Optional: small magnetic nudge effect (paired with .magnet class) */
+.magnet {
+  transform: translateZ(0);
+}
+
+/* -------------- ABOUT GRADIENT -------------- */
+.about {
+  background-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    var(--primary-color) 8rem
+  );
+  overflow: hidden;
+}
+
+/* -------------- IMAGES -------------- */
+.about__image img {
+  max-width: 400px;
+  margin-inline: auto;
+  border-radius: 5px;
+  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.4);
+  transition: transform 300ms ease, box-shadow 300ms ease;
+}
+.about__image img:hover {
+  transform: translateY(-4px);
+  box-shadow: 5px 12px 40px rgba(0,0,0,0.45);
+}
+
+/* -------------- DESKTOP GRID -------------- */
 @media (width > 768px) {
   .about__container {
     display: grid;
@@ -177,5 +288,29 @@
   }
   .about__image-1 { grid-area: 1 / 2 / 2 / 3; }
   .about__image-3 { grid-area: 3 / 2 / 4 / 3; }
-  .about__content { margin-left: 6rem; } /* ~ Tailwind md:ml-24 */
+  .about__content { margin-left: 6rem; }
+}
+
+/* -------------- MOBILE TIDY -------------- */
+@media (max-width: 768px) {
+  .header__container { justify-content: center; text-align: center; padding-left: 0; }
+  .header__content .section__subheader { padding-left: 0; padding-right: 0; }
+  .header__content .section__subheader::before,
+  .header__content .section__subheader::after { display: none; }
+  .quote { display: block; }
+}
+
+/* -------------- REDUCED MOTION -------------- */
+@media (prefers-reduced-motion: reduce) {
+  .header::before,
+  .hero-tilt,
+  .scroll__btn a,
+  .orb,
+  .shimmer::before,
+  .header__content .section__subheader::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .quote:hover { transform: none; letter-spacing: initial; text-shadow: none; }
+  .quote::after { display: none; }
 }
