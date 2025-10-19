@@ -1,11 +1,15 @@
-// src/pages/Dashboard.tsx
+// ===========================================
+// File: src/pages/Dashboard.tsx
+// Description: Dashboard page showing user info after login
+// ===========================================
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar"; // ✅ add this
+import Navbar from "../components/Navbar"; // ✅ shared navbar
 
 export default function Dashboard() {
-  const [userInfo, setUserInfo] = useState<{ username: string; email: string } | null>(null);
+  const [userInfo, setUserInfo] = useState<{ username: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -29,7 +33,7 @@ export default function Dashboard() {
         const response = await axios.get(`${BASE_URL}/api/userinfo/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUserInfo(response.data);
+        setUserInfo({ username: response.data.username });
       } catch (err) {
         console.error("Error fetching user info:", err);
         setError("Failed to fetch user info. Please log in again.");
@@ -76,7 +80,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <Navbar /> {/* ✅ This stays fixed and visible everywhere */}
+      <Navbar />
       <div
         style={{
           height: "100vh",
@@ -88,17 +92,8 @@ export default function Dashboard() {
           alignItems: "center",
         }}
       >
-        <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>🎉 You are now logged in!</h1>
-
         {userInfo ? (
-          <>
-            <p style={{ fontSize: "1.2rem", marginBottom: "5px" }}>
-              <strong>Username:</strong> {userInfo.username}
-            </p>
-            <p style={{ fontSize: "1.2rem" }}>
-              <strong>Email:</strong> {userInfo.email}
-            </p>
-          </>
+          <h1 style={{ fontSize: "2rem" }}>👋 Welcome, {userInfo.username}!</h1>
         ) : (
           <p>No user information available.</p>
         )}
