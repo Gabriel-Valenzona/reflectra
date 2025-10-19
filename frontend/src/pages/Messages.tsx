@@ -1,6 +1,6 @@
 // ===========================================
 // File: src/pages/Messages.tsx
-// Description: Separate inbox + proper chat partner display
+// Description: Inbox and Messages sections clearly separated with headers
 // ===========================================
 
 import { useState, useEffect } from "react";
@@ -53,7 +53,7 @@ export default function Messages() {
     fetchFollowing();
   }, []);
 
-  // ✅ Fetch inbox (recent conversations)
+  // ✅ Fetch inbox
   useEffect(() => {
     const fetchInbox = async () => {
       try {
@@ -106,7 +106,6 @@ export default function Messages() {
       setMessages((prev) => [...prev, response.data]);
       setMessageText("");
 
-      // Refresh inbox after sending
       const inboxRes = await axios.get(`${BASE_URL}/api/inbox/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -153,7 +152,7 @@ export default function Messages() {
             display: "flex",
             flexDirection: "column",
             alignItems: "stretch",
-            gap: "30px",
+            gap: "25px",
           }}
         >
           {/* ✅ Inbox Section */}
@@ -203,19 +202,79 @@ export default function Messages() {
                 })}
               </div>
             ) : (
-              <p style={{ color: "#94a3b8" }}>No messages yet.</p>
+              <p style={{ color: "#94a3b8" }}>
+                No messages yet — start chatting with someone you follow!
+              </p>
             )}
           </div>
 
+          {/* ✅ Divider / New Section Header */}
+          <div
+            style={{
+              borderTop: "1px solid #334155",
+              paddingTop: "10px",
+              marginTop: "10px",
+            }}
+          >
+            <h3 style={{ marginBottom: "15px", color: "#94a3b8" }}>💬 Messages</h3>
+          </div>
+
           {/* ✅ Message Section */}
-          <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              backgroundColor: "#0f172a",
+              borderRadius: "10px",
+              padding: "25px",
+              marginTop: "5px",
+            }}
+          >
             {!selectedChat ? (
               <>
-                <h2 style={{ color: "#cbd5e1" }}>Select a chat to start messaging</h2>
-                {following.length === 0 && (
-                  <p style={{ color: "#94a3b8", marginTop: "10px" }}>
-                    You haven’t followed anyone yet — visit the Activity Feed to start connecting!
+                <h2 style={{ color: "#cbd5e1", textAlign: "center" }}>
+                  Select a chat to start messaging
+                </h2>
+
+                {following.length === 0 && inbox.length === 0 && (
+                  <p
+                    style={{
+                      color: "#94a3b8",
+                      textAlign: "center",
+                      marginTop: "10px",
+                    }}
+                  >
+                    You haven’t followed anyone yet — visit the Activity Feed to
+                    start connecting!
                   </p>
+                )}
+
+                {following.length > 0 && inbox.length === 0 && (
+                  <div
+                    style={{
+                      marginTop: "15px",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      justifyContent: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    {following.slice(0, 4).map((user) => (
+                      <button
+                        key={user.id}
+                        onClick={() => setSelectedChat(user)}
+                        style={{
+                          backgroundColor: "#2563eb",
+                          border: "none",
+                          borderRadius: "8px",
+                          padding: "8px 14px",
+                          color: "white",
+                          cursor: "pointer",
+                          fontSize: "0.95rem",
+                        }}
+                      >
+                        💬 {user.username}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </>
             ) : (
