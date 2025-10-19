@@ -16,13 +16,14 @@ export default function ActivityFeed() {
   const [newPost, setNewPost] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [hasSearched, setHasSearched] = useState(false); // ✅ New flag
 
   const BASE_URL =
     window.location.hostname === "localhost"
       ? "http://127.0.0.1:8000"
       : "https://reflectra-backend.onrender.com";
 
-  // ✅ Fetch users (search bar)
+  // ✅ Fetch users (only after clicking Search)
   const fetchUsers = async (query = "") => {
     setLoading(true);
     try {
@@ -40,7 +41,7 @@ export default function ActivityFeed() {
     }
   };
 
-  // ✅ Fetch posts
+  // ✅ Fetch posts (always load on mount)
   const fetchPosts = async () => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -53,9 +54,8 @@ export default function ActivityFeed() {
     }
   };
 
-  // ✅ Load initial data
+  // ✅ Load posts only once on mount
   useEffect(() => {
-    fetchUsers();
     fetchPosts();
   }, []);
 
@@ -82,6 +82,7 @@ export default function ActivityFeed() {
   // 🔍 Handle user search
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setHasSearched(true); // ✅ show results after search
     fetchUsers(searchQuery);
   };
 
@@ -258,34 +259,38 @@ export default function ActivityFeed() {
           </button>
         </form>
 
-        {/* 👥 User Results */}
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: "20px",
-              width: "80%",
-              maxWidth: "1000px",
-              marginBottom: "40px",
-            }}
-          >
-            {users.map((user) => (
-              <UserCard
-                key={user.id}
-                id={user.id}
-                username={user.username}
-                email={user.email}
-                bio={user.bio}
-                isFollowing={user.is_following}
-                onFollowToggle={() => handleFollowToggle(user.id, user.is_following)}
-                onClick={() => setSelectedUser(user)}
-              />
-            ))}
-          </div>
+        {/* 👥 User Results — only after clicking Search */}
+        {hasSearched && (
+          loading ? (
+            <p>Loading...</p>
+          ) : users.length > 0 ? (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: "20px",
+                width: "80%",
+                maxWidth: "1000px",
+                marginBottom: "40px",
+              }}
+            >
+              {users.map((user) => (
+                <UserCard
+                  key={user.id}
+                  id={user.id}
+                  username={user.username}
+                  email={user.email}
+                  bio={user.bio}
+                  isFollowing={user.is_following}
+                  onFollowToggle={() => handleFollowToggle(user.id, user.is_following)}
+                  onClick={() => setSelectedUser(user)}
+                />
+              ))}
+            </div>
+          ) : (
+            <p style={{ color: "#94a3b8" }}>No users found.</p>
+          )
         )}
 
         {/* ✅ Modal for Selected User */}
