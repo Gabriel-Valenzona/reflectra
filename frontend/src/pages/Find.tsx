@@ -1,6 +1,6 @@
 // ===========================================
 // File: src/pages/Find.tsx
-// Description: Page to search for users (shows all users by default, horizontal layout)
+// Description: Page to search for users (shows all users by default, horizontal layout, modal profile view)
 // ===========================================
 
 import React, { useState, useEffect } from "react";
@@ -13,6 +13,7 @@ export default function Find() {
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null); // ✅ for modal view
 
   const BASE_URL =
     window.location.hostname === "localhost"
@@ -62,6 +63,12 @@ export default function Find() {
           user.id === userId ? { ...user, is_following: !currentlyFollowing } : user
         )
       );
+      if (selectedUser && selectedUser.id === userId) {
+        setSelectedUser({
+          ...selectedUser,
+          is_following: !currentlyFollowing,
+        });
+      }
     } catch (err) {
       console.error("Error toggling follow:", err);
     }
@@ -136,27 +143,109 @@ export default function Find() {
         {loading ? (
           <p>Loading...</p>
         ) : users.length > 0 ? (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: "20px",
-              width: "80%",
-              maxWidth: "1000px",
-            }}
-          >
-            {users.map((user) => (
-              <UserCard
-                key={user.id}
-                username={user.username}
-                email={user.email}
-                bio={user.bio}
-                isFollowing={user.is_following}
-                onFollowToggle={() => handleFollowToggle(user.id, user.is_following)}
-              />
-            ))}
-          </div>
+          <>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: "20px",
+                width: "80%",
+                maxWidth: "1000px",
+              }}
+            >
+              {users.map((user) => (
+                <UserCard
+                  key={user.id}
+                  id={user.id}
+                  username={user.username}
+                  email={user.email}
+                  bio={user.bio}
+                  isFollowing={user.is_following}
+                  onFollowToggle={() => handleFollowToggle(user.id, user.is_following)}
+                  onClick={() => setSelectedUser(user)} // ✅ open modal
+                />
+              ))}
+            </div>
+
+            {/* ✅ Modal for Selected User */}
+            {selectedUser && (
+              <div
+                style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: "rgba(0, 0, 0, 0.6)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 1000,
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: "#1e293b",
+                    color: "white",
+                    borderRadius: "12px",
+                    padding: "30px",
+                    width: "90%",
+                    maxWidth: "500px",
+                    boxShadow: "0 6px 25px rgba(0,0,0,0.4)",
+                    textAlign: "center",
+                    position: "relative",
+                    animation: "fadeIn 0.3s ease-in-out",
+                  }}
+                >
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setSelectedUser(null)}
+                    style={{
+                      position: "absolute",
+                      top: "10px",
+                      right: "15px",
+                      background: "transparent",
+                      border: "none",
+                      color: "#94a3b8",
+                      fontSize: "1.5rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ❌
+                  </button>
+
+                  <h2 style={{ fontSize: "1.6rem", marginBottom: "10px" }}>
+                    {selectedUser.username}
+                  </h2>
+                  <p style={{ color: "#94a3b8", marginBottom: "10px" }}>
+                    {selectedUser.email}
+                  </p>
+                  <p style={{ fontSize: "1rem", marginBottom: "20px" }}>
+                    {selectedUser.bio || "No bio provided."}
+                  </p>
+
+                  <button
+                    onClick={() =>
+                      handleFollowToggle(selectedUser.id, selectedUser.is_following)
+                    }
+                    style={{
+                      backgroundColor: selectedUser.is_following
+                        ? "#475569"
+                        : "#2563eb",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "6px",
+                      padding: "10px 20px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {selectedUser.is_following ? "Unfollow" : "Follow"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <p style={{ fontSize: "1rem", color: "#94a3b8" }}>
             No users found. Try searching or check back later.
