@@ -4,7 +4,7 @@
 # ===========================================
 
 from rest_framework import serializers
-from .models import AccountabilityPosts, UserProfile, MoodLog
+from .models import AccountabilityPosts, UserProfile, MoodLog, Message
 
 # -------------------------------
 # User Profile Serializer
@@ -35,3 +35,22 @@ class MoodLogSerializer(serializers.ModelSerializer):
         model = MoodLog
         fields = ['id', 'user', 'mood', 'stress', 'sleep', 'notes', 'timestamp']
         read_only_fields = ['user', 'timestamp']
+
+
+# -------------------------------
+# Message Serializer
+# -------------------------------
+class MessageSerializer(serializers.ModelSerializer):
+    sender_username = serializers.CharField(source='sender.username', read_only=True)
+    receiver_username = serializers.CharField(source='receiver.username', read_only=True)
+
+    class Meta:
+        model = Message
+        fields = [
+            'id',
+            'sender_username',
+            'receiver_username',
+            'content',
+            'timestamp',
+            'is_read',
+        ]

@@ -1,6 +1,6 @@
 // ===========================================
 // File: src/pages/Messages.tsx
-// Description: Inbox and message view with friendly chat suggestions
+// Description: Integrated frontend for messaging with backend routes
 // ===========================================
 
 import { useState, useEffect } from "react";
@@ -11,6 +11,7 @@ import Navbar from "../components/Navbar";
 export default function Messages() {
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
   const [following, setFollowing] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [messageText, setMessageText] = useState("");
 
   const BASE_URL =
@@ -34,12 +35,46 @@ export default function Messages() {
     fetchFollowing();
   }, []);
 
-  // ✅ Handle message send (frontend only for now)
-  const handleSend = (e: React.FormEvent) => {
+  // ✅ Fetch conversation when user selects a chat
+  useEffect(() => {
+    const fetchConversation = async () => {
+      if (!selectedChat) return;
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await axios.get(
+          `${BASE_URL}/api/messages/${selectedChat.username}/`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setMessages(response.data);
+      } catch (err) {
+        console.error("Error fetching conversation:", err);
+      }
+    };
+    fetchConversation();
+  }, [selectedChat]);
+
+  // ✅ Send a message
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!messageText.trim()) return;
-    console.log(`Message sent to ${selectedChat.username}: ${messageText}`);
-    setMessageText("");
+    if (!messageText.trim() || !selectedChat) return;
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.post(
+        `${BASE_URL}/api/messages/send/`,
+        {
+          receiver: selectedChat.username,
+          content: messageText,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Add new message locally
+      setMessages((prev) => [...prev, response.data]);
+      setMessageText("");
+    } catch (err) {
+      console.error("Error sending message:", err);
+    }
   };
 
   return (
@@ -90,7 +125,6 @@ export default function Messages() {
               <>
                 <h2 style={{ color: "#cbd5e1" }}>Your Messages</h2>
 
-                {/* If user has followers */}
                 {following.length > 0 ? (
                   <>
                     <p style={{ color: "#94a3b8", marginTop: "10px" }}>
@@ -125,7 +159,6 @@ export default function Messages() {
                     </div>
                   </>
                 ) : (
-                  /* If user has no followers */
                   <p style={{ color: "#94a3b8", marginTop: "10px" }}>
                     No active chats yet — try following people on the Activity
                     Feed to start connecting!
@@ -145,7 +178,54 @@ export default function Messages() {
                   Chat with {selectedChat.username}
                 </h3>
 
-                {/* ✅ Message Input (frontend only) */}
+                {/* ✅ Message History */}
+                <div
+                  style={{
+                    maxHeight: "400px",
+                    overflowY: "auto",
+                    backgroundColor: "#1e293b",
+                    padding: "10px",
+                    marginTop: "10px",
+                    borderRadius: "8px",
+                  }}
+                >
+                  {messages.length > 0 ? (
+                    messages.map((msg, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          textAlign:
+                            msg.sender_username === selectedChat.username
+                              ? "left"
+                              : "right",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "inline-block",
+                            backgroundColor:
+                              msg.sender_username === selectedChat.username
+                                ? "#334155"
+                                : "#2563eb",
+                            padding: "8px 12px",
+                            borderRadius: "8px",
+                            color: "white",
+                            maxWidth: "70%",
+                          }}
+                        >
+                          {msg.content}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p style={{ color: "#94a3b8" }}>
+                      No messages yet — start the conversation!
+                    </p>
+                  )}
+                </div>
+
+                {/* ✅ Message Input */}
                 <form
                   onSubmit={handleSend}
                   style={{

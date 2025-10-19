@@ -4,7 +4,7 @@
 # ===========================================
 
 from django.urls import path
-from . import views, views_auth, views_posts, views_wellness
+from . import views, views_auth, views_posts, views_wellness, views_messages
 
 urlpatterns = [
     # ✅ User registration & login
@@ -30,4 +30,9 @@ urlpatterns = [
 
     # ✅ Wellness / Mood Logs
     path('moodlogs/', views_wellness.MoodLogListCreateView.as_view(), name='moodlogs'),
+
+    # ✅ Messaging
+    path('messages/send/', views_messages.send_message, name='send_message'),
+    path('messages/<str:username>/', views_messages.get_conversation, name='get_conversation'),
+    path('inbox/', views_messages.inbox, name='inbox'),
 ]
