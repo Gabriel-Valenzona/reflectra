@@ -1,4 +1,4 @@
-# Reflectra Setup — Copy Paste README.md Snippet
+# Reflectra Setup
  > This PDF is formatted as **Markdown** so you can copy paste directly into a `README.md`.--
 ## Create & activate `venv`
  ### Windows (PowerShell)
