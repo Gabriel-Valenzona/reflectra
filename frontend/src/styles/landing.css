@@ -1,0 +1,130 @@
+/* src/styles/landing.css
+   Mirrors the vanilla hero + about behavior for React/Tailwind.
+   Uses CSS variables defined in your global CSS (primary, secondary, etc.). */
+
+/* -------------- HERO (HEADER) -------------- */
+.header {
+  position: relative;
+  height: 100vh;            /* same as vanilla */
+  z-index: 0;               /* ⭐ create a stacking context so ::before (z:-1) stays above the page bg */
+}
+
+/* Extend 15rem below the header and sit BEHIND header content, not behind the page */
+.header::before {
+  position: absolute;
+  content: "";
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 15rem);
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0), var(--primary-color)),
+    var(--header-image, url("/src/assets/imgs/header-1.jpg"));
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  z-index: -1;
+  pointer-events: none;     /* safety: pseudo-layer never captures clicks */
+}
+
+/* -------------- ABOUT GRADIENT -------------- */
+/* Snap to primary at 8rem from the top (prevents any seam) */
+.about {
+  background-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    var(--primary-color) 8rem
+  );
+  overflow: hidden;
+}
+
+/* -------------- IMAGES (match vanilla look) -------------- */
+.about__image img {
+  max-width: 400px;
+  margin-inline: auto;
+  border-radius: 5px;
+  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* -------------- SUBHEADER DECOR (big 01/02/03) -------------- */
+.section__subheader {
+  position: relative;
+  isolation: isolate;
+  padding-left: 5rem;
+  letter-spacing: 2px;
+  color: var(--secondary-color);
+}
+.section__subheader::before {
+  position: absolute;
+  content: "";
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  height: 2px;
+  width: 4rem;
+  background-color: var(--secondary-color);
+}
+.section__subheader::after {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(-60%, -50%);
+  font-size: 8rem;
+  font-weight: 600;
+  color: var(--white);
+  opacity: 0.1;
+  z-index: -1;
+  content: "";
+}
+/* numeric watermarks per block */
+.about__content-1 .section__subheader::after { content: "01"; }
+.about__content-2 .section__subheader::after { content: "02"; }
+.about__content-3 .section__subheader::after { content: "03"; }
+
+/* -------------- TYPOGRAPHY (match vanilla headings) -------------- */
+.section__header {
+  margin-bottom: 1rem;
+  font-size: 3rem;
+  font-weight: 400;
+  font-family: var(--header-font, "Playfair Display", serif);
+  color: var(--white);
+}
+
+/* -------------- HEADER LAYOUT (like vanilla) -------------- */
+.header__container {
+  position: relative;
+  isolation: isolate;
+  height: calc(100% - 75px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header__content {
+  max-width: 700px;
+}
+.header__content .section__header {
+  font-size: 4rem;
+  font-weight: 600;
+  line-height: 5rem;
+}
+.header__socials {
+  position: absolute;
+  left: 0;
+  align-items: center;
+  gap: 1rem;
+  color: var(--white);
+  transform: translateX(calc(-50% + 1rem)) rotate(90deg);
+}
+
+/* -------------- DESKTOP GRID BEHAVIOR (vanilla parity) -------------- */
+@media (width > 768px) {
+  .about__container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: center;
+    gap: 10rem 2rem;
+  }
+  .about__image-1 { grid-area: 1 / 2 / 2 / 3; }
+  .about__image-3 { grid-area: 3 / 2 / 4 / 3; }
+  .about__content { margin-left: 6rem; } /* ~ Tailwind md:ml-24 */
+}
