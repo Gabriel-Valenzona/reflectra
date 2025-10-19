@@ -1,6 +1,12 @@
+// ===========================================
+// File: src/pages/Account.tsx
+// Description: Profile page with editable info, posts, and follow management
+// ===========================================
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
+import UserCard from "../components/UserCard";
 
 export default function Account() {
   const [userInfo, setUserInfo] = useState({
@@ -49,14 +55,12 @@ export default function Account() {
           mood_preference: userRes.data.mood_preference,
         });
 
-        // ✅ Use direct backend data for following list
         if (followRes.data.following) {
-            setFollowing(followRes.data.following); // use objects directly
+          setFollowing(followRes.data.following);
         } else {
-            setFollowing([]);
+          setFollowing([]);
         }
 
-        // ✅ Filter posts to show only the user's own posts
         setPosts(postRes.data.filter((p: any) => p.username === userRes.data.username));
       } catch (err) {
         console.error("Error loading account info:", err);
@@ -68,6 +72,26 @@ export default function Account() {
 
     fetchAccountData();
   }, []);
+
+  const handleFollowToggle = async (userId: number, currentlyFollowing: boolean) => {
+    const token = localStorage.getItem("accessToken");
+    const endpoint = currentlyFollowing
+      ? `${BASE_URL}/api/unfollow/${userId}/`
+      : `${BASE_URL}/api/follow/${userId}/`;
+
+    try {
+      await axios.post(endpoint, {}, { headers: { Authorization: `Bearer ${token}` } });
+
+      // Update UI instantly
+      setFollowing((prev) =>
+        currentlyFollowing
+          ? prev.filter((u) => u.id !== userId)
+          : [...prev, { id: userId, is_following: true }]
+      );
+    } catch (err) {
+      console.error("Error toggling follow:", err);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,25 +177,40 @@ export default function Account() {
           👤 My Profile
         </h1>
 
-
-
         {/* Following List */}
         <div
           style={{
             backgroundColor: "#1e293b",
             borderRadius: "10px",
             padding: "20px",
-            maxWidth: "700px",
+            maxWidth: "900px",
             margin: "0 auto 40px",
           }}
         >
           <h2>👥 Following</h2>
           {following.length > 0 ? (
-            <ul style={{ paddingLeft: "20px" }}>
-              {following.map((user, i) => (
-                <li key={i}>{user.username}</li>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: "20px",
+                marginTop: "15px",
+              }}
+            >
+              {following.map((user) => (
+                <UserCard
+                  key={user.id}
+                  id={user.id}
+                  username={user.username}
+                  email={user.email}
+                  bio={user.bio}
+                  isFollowing={true}
+                  onFollowToggle={() => handleFollowToggle(user.id, true)}
+                  onClick={() => {}}
+                />
               ))}
-            </ul>
+            </div>
           ) : (
             <p style={{ color: "#94a3b8" }}>You’re not following anyone yet.</p>
           )}
