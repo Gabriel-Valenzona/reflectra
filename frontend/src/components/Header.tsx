@@ -1,6 +1,6 @@
 // ===========================================
 // File: src/components/Header.tsx
-// Description: Dashboard header with only "Find" link
+// Description: Dashboard header with "Activity Feed" link
 // ===========================================
 
 import React from "react";
@@ -15,7 +15,7 @@ export default function Header() {
         backgroundColor: "#0f172a",
         color: "white",
         padding: "20px 0",
-        borderBottom: "2px solid #clear",
+        borderBottom: "2px solid transparent",
         textAlign: "center",
         position: "sticky",
         top: 0,
@@ -25,7 +25,7 @@ export default function Header() {
       {/* Navigation Links */}
       <nav style={{ display: "flex", justifyContent: "center", gap: "40px" }}>
         <span
-          onClick={() => navigate("/find")}
+          onClick={() => navigate("/activity")}
           style={{
             cursor: "pointer",
             fontSize: "1.1rem",
@@ -36,7 +36,7 @@ export default function Header() {
           onMouseEnter={(e) => (e.currentTarget.style.color = "#ffffff")}
           onMouseLeave={(e) => (e.currentTarget.style.color = "#cbd5e1")}
         >
-          Find
+          Activity Feed
         </span>
       </nav>
     </header>

@@ -10,7 +10,7 @@ import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
 import Account from "./pages/Account";
 import Settings from "./pages/Settings";
-import Find from "./pages/Find"; // ✅ added import
+import ActivityFeed from "./pages/ActivityFeed";
 
 export default function App() {
   return (
@@ -27,8 +27,7 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/account" element={<Account />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/find" element={<Find />} /> {/* ✅ Added Find route */}
-      </Routes>
+        <Route path="/activity" element={<ActivityFeed />} />      </Routes>
     </Router>
   );
 }
