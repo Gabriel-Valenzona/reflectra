@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -110,6 +111,17 @@ export default function LoginPage() {
         {message && (
           <p style={{ marginTop: "15px", color: "#374151" }}>{message}</p>
         )}
+
+        {/* Add Register link */}
+        <p style={{ marginTop: "20px", color: "#374151" }}>
+          Don’t have an account?{" "}
+          <Link
+            to="/register"
+            style={{ color: "#2563eb", textDecoration: "none", fontWeight: 500 }}
+          >
+            Register here
+          </Link>
+        </p>
       </form>
     </div>
   );
