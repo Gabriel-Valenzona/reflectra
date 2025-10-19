@@ -45,6 +45,7 @@ export default function Navbar() {
             boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
             width: "150px",
             textAlign: "left",
+            color: "white", 
           }}
         >
           <p
