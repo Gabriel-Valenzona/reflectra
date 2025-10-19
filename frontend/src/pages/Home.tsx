@@ -149,7 +149,7 @@ const Home: React.FC = () => {
             <h3 className="section__subheader shimmer">A REFLECTION TOOL FOR GROWTH</h3>
 
             <h1 className="section__header quote" aria-live="polite">
-              <span className="quote__inner">“One who thinks their journey is over, is truly lost.”</span>
+              <span className="quote__inner">“They who thinks their journey is over, is truly lost.”</span>
             </h1>
 
             <div className="scroll__btn mt-6">
