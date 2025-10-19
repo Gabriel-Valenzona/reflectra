@@ -16,7 +16,9 @@ export default function ActivityFeed() {
   const [newPost, setNewPost] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
-  const [hasSearched, setHasSearched] = useState(false); // ✅ New flag
+  const [hasSearched, setHasSearched] = useState(false);
+  const [followingList, setFollowingList] = useState<number[]>([]); // ✅ store IDs of followed users
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null); // ✅ store current user ID
 
   const BASE_URL =
     window.location.hostname === "localhost"
@@ -41,7 +43,34 @@ export default function ActivityFeed() {
     }
   };
 
-  // ✅ Fetch posts (always load on mount)
+  // ✅ Fetch following list
+  const fetchFollowingList = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`${BASE_URL}/api/following/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // assuming backend returns list of user IDs you follow
+      setFollowingList(response.data.following_ids || []);
+    } catch (error) {
+      console.error("Error fetching following list:", error);
+    }
+  };
+
+  // ✅ Fetch current user info (for self-post visibility)
+  const fetchCurrentUser = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`${BASE_URL}/api/me/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCurrentUserId(response.data.id);
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+    }
+  };
+
+  // ✅ Fetch posts
   const fetchPosts = async () => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -54,8 +83,10 @@ export default function ActivityFeed() {
     }
   };
 
-  // ✅ Load posts only once on mount
+  // ✅ Load data on mount
   useEffect(() => {
+    fetchCurrentUser();
+    fetchFollowingList();
     fetchPosts();
   }, []);
 
@@ -82,7 +113,7 @@ export default function ActivityFeed() {
   // 🔍 Handle user search
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setHasSearched(true); // ✅ show results after search
+    setHasSearched(true);
     fetchUsers(searchQuery);
   };
 
@@ -100,6 +131,12 @@ export default function ActivityFeed() {
           user.id === userId ? { ...user, is_following: !currentlyFollowing } : user
         )
       );
+
+      // update following list in frontend
+      setFollowingList((prev) =>
+        currentlyFollowing ? prev.filter((id) => id !== userId) : [...prev, userId]
+      );
+
       if (selectedUser && selectedUser.id === userId) {
         setSelectedUser({
           ...selectedUser,
@@ -110,6 +147,13 @@ export default function ActivityFeed() {
       console.error("Error toggling follow:", err);
     }
   };
+
+  // ✅ Filter posts — only show own + followed users' posts
+  const visiblePosts = posts.filter(
+    (post) =>
+      (currentUserId && post.user_id === currentUserId) ||
+      followingList.includes(post.user_id)
+  );
 
   return (
     <>
@@ -178,7 +222,7 @@ export default function ActivityFeed() {
           </button>
         </form>
 
-        {/* 📰 Posts List */}
+        {/* 📰 Filtered Posts List */}
         <div
           style={{
             width: "90%",
@@ -189,8 +233,8 @@ export default function ActivityFeed() {
             marginBottom: "40px",
           }}
         >
-          {posts.length > 0 ? (
-            posts.map((post) => (
+          {visiblePosts.length > 0 ? (
+            visiblePosts.map((post) => (
               <div
                 key={post.id}
                 style={{
@@ -210,7 +254,9 @@ export default function ActivityFeed() {
               </div>
             ))
           ) : (
-            <p style={{ color: "#94a3b8" }}>No posts yet. Start the conversation!</p>
+            <p style={{ color: "#94a3b8" }}>
+              No posts yet. Follow someone to start interacting or share your first post!
+            </p>
           )}
         </div>
 

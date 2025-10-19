@@ -1,6 +1,6 @@
 # ===========================================
 # File: reflectra/views_auth.py
-# Description: Authentication and user info management (with user ID logging)
+# Description: Authentication, profile, and follow info
 # ===========================================
 
 from rest_framework.decorators import api_view, permission_classes
@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 import logging
-from .models import UserProfile
+from .models import UserProfile, Follow
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -35,7 +35,6 @@ def register_user(request):
     if User.objects.filter(email=email).exists():
         return Response({'error': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Create Django user
     user = User.objects.create_user(username=username, email=email, password=password)
     UserProfile.objects.create(user=user)
 
@@ -165,15 +164,32 @@ def delete_user_account(request):
         profile = getattr(user, 'profile', None)
         if profile:
             profile.delete()
-
         user.delete()
-
         log_message = f"🗑️ User account deleted | user_id={user_id}, username={username}, email={email}"
         logger.info(log_message)
         print(log_message)
-
         return Response({'message': 'Account deleted successfully.'}, status=status.HTTP_200_OK)
-
     except Exception as e:
         logger.error(f"❌ Failed to delete account | user_id={user_id}, username={username} | Error: {e}")
         return Response({'error': 'Failed to delete account.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# -------------------------------
+# CURRENT USER & FOLLOWING ENDPOINTS
+# -------------------------------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_me(request):
+    user = request.user
+    return Response({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_following(request):
+    following_ids = Follow.objects.filter(follower=request.user).values_list('following_id', flat=True)
+    return Response({'following_ids': list(following_ids)})
