@@ -1,14 +1,16 @@
+// src/pages/LoginPage.tsx
 import React, { useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [loginInput, setLoginInput] = useState(""); // ✅ renamed (can be username or email)
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
-  // Automatically pick backend URL (local vs deployed)
+  // ✅ automatically pick correct backend
   const BASE_URL =
     window.location.hostname === "localhost"
       ? "http://127.0.0.1:8000"
@@ -20,13 +22,24 @@ export default function LoginPage() {
     setMessage("");
 
     try {
-      // Send credentials to Django backend via Axios
+      // ✅ send single field "username" (can be email or username)
       const response = await axios.post(`${BASE_URL}/api/login/`, {
-        email,
+        username: loginInput, // <--- this matches backend key
         password,
       });
 
-      setMessage(`✅ Login successful! Welcome, ${response.data.user}`);
+      const { access, refresh, user } = response.data;
+
+      // ✅ store JWT tokens
+      localStorage.setItem("accessToken", access);
+      localStorage.setItem("refreshToken", refresh);
+
+      console.log(`User logged in; username = ${user}`);
+      console.log("Access token:", access);
+      console.log("Refresh token:", refresh);
+
+      setMessage(`✅ Login successful! Welcome, ${user}`);
+      setTimeout(() => navigate("/home"), 1500);
     } catch (error: any) {
       console.error("Error:", error);
       if (error.response) {
@@ -63,10 +76,10 @@ export default function LoginPage() {
         <h2 style={{ marginBottom: "20px" }}>Login</h2>
 
         <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          placeholder="Username or Email"
+          value={loginInput}
+          onChange={(e) => setLoginInput(e.target.value)}
           required
           style={{
             width: "100%",
@@ -112,12 +125,15 @@ export default function LoginPage() {
           <p style={{ marginTop: "15px", color: "#374151" }}>{message}</p>
         )}
 
-        {/* Add Register link */}
         <p style={{ marginTop: "20px", color: "#374151" }}>
           Don’t have an account?{" "}
           <Link
             to="/register"
-            style={{ color: "#2563eb", textDecoration: "none", fontWeight: 500 }}
+            style={{
+              color: "#2563eb",
+              textDecoration: "none",
+              fontWeight: 500,
+            }}
           >
             Register here
           </Link>
