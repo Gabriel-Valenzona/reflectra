@@ -1,12 +1,13 @@
 // ===========================================
 // File: src/pages/Dashboard.tsx
-// Description: Dashboard page showing user info after login
+// Description: Dashboard page showing user info after login with Header + Navbar
 // ===========================================
 
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar"; // ✅ shared navbar
+import Navbar from "../components/Navbar";
+import Header from "../components/Header"; // ✅ header with "Find" link
 
 export default function Dashboard() {
   const [userInfo, setUserInfo] = useState<{ username: string } | null>(null);
@@ -42,6 +43,7 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
+
     fetchUserInfo();
   }, [navigate]);
 
@@ -80,20 +82,26 @@ export default function Dashboard() {
 
   return (
     <>
+      {/* ✅ Fixed header + hamburger menu */}
+      <Header />
       <Navbar />
+
       <div
         style={{
-          height: "100vh",
+          height: "calc(100vh - 100px)", // space for header
           backgroundColor: "#0f172a",
           color: "white",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
+          fontFamily: "inherit", // ✅ consistent font
         }}
       >
         {userInfo ? (
-          <h1 style={{ fontSize: "2rem" }}>👋 Welcome, {userInfo.username}!</h1>
+          <h1 style={{ fontSize: "2rem", textAlign: "center" }}>
+            👋 Welcome, {userInfo.username}!
+          </h1>
         ) : (
           <p>No user information available.</p>
         )}

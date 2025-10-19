@@ -1,42 +1,99 @@
-# reflectra/views_auth.py
+# ===========================================
+# File: reflectra/views.py
+# Description: Views for user search, follow, unfollow, and followers list
+# ===========================================
+
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
+from .models import Follow, UserProfile
+import logging
 
+logger = logging.getLogger(__name__)
+
+# -------------------------------
+# List or Search Users
+# -------------------------------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_users(request):
+    query = request.query_params.get('q', '').strip().lower()
+    users = User.objects.all()
+
+    if query:
+        users = users.filter(username__icontains=query) | users.filter(email__icontains=query)
+
+    result = []
+    for user in users:
+        profile = getattr(user, 'profile', None)
+        result.append({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'bio': getattr(profile, 'bio', '')
+        })
+
+    logger.info(f"👥 User list fetched by {request.user.username}")
+    return Response(result, status=status.HTTP_200_OK)
+
+
+# -------------------------------
+# Follow a User
+# -------------------------------
 @api_view(['POST'])
-@permission_classes([AllowAny])
-def register_user(request):
-    username = request.data.get('username')
-    email = request.data.get('email')
-    password = request.data.get('password')
+@permission_classes([IsAuthenticated])
+def follow_user(request, user_id):
+    try:
+        target_user = User.objects.get(id=user_id)
+        if request.user == target_user:
+            return Response({'error': 'You cannot follow yourself.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    if not all([username, email, password]):
-        return Response({'error': 'All fields required'}, status=status.HTTP_400_BAD_REQUEST)
+        follow, created = Follow.objects.get_or_create(follower=request.user, following=target_user)
+        if not created:
+            return Response({'message': 'Already following this user.'}, status=status.HTTP_200_OK)
 
-    if User.objects.filter(username=username).exists():
-        return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        logger.info(f"➕ {request.user.username} (ID {request.user.id}) followed {target_user.username} (ID {target_user.id})")
+        return Response({'message': 'Followed successfully.'}, status=status.HTTP_201_CREATED)
 
-    user = User.objects.create_user(username=username, email=email, password=password)
-    return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def login_user(request):
-    username = request.data.get('username') or request.data.get('email')
-    password = request.data.get('password')
+# -------------------------------
+# Unfollow a User
+# -------------------------------
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def unfollow_user(request, user_id):
+    try:
+        target_user = User.objects.get(id=user_id)
+        follow = Follow.objects.filter(follower=request.user, following=target_user).first()
+        if not follow:
+            return Response({'error': 'You are not following this user.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = authenticate(username=username, password=password)
-    if not user:
-        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        follow.delete()
+        logger.info(f"❌ {request.user.username} (ID {request.user.id}) unfollowed {target_user.username} (ID {target_user.id})")
+        return Response({'message': 'Unfollowed successfully.'}, status=status.HTTP_200_OK)
 
-    refresh = RefreshToken.for_user(user)
-    return Response({
-        'access': str(refresh.access_token),
-        'refresh': str(refresh),
-        'user': user.username,
-    })
+    except User.DoesNotExist:
+        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+# -------------------------------
+# Get Followers of a User
+# -------------------------------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_followers(request, user_id):
+    try:
+        target_user = User.objects.get(id=user_id)
+        followers = Follow.objects.filter(following=target_user)
+
+        result = [{'username': f.follower.username, 'id': f.follower.id} for f in followers]
+        logger.info(f"👀 Followers list fetched for {target_user.username} (ID {target_user.id})")
+        return Response(result, status=status.HTTP_200_OK)
+
+    except User.DoesNotExist:
+        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)

@@ -1,11 +1,16 @@
-// src/App.tsx
+// ===========================================
+// File: src/App.tsx
+// Description: Main routing configuration for Reflectra
+// ===========================================
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
-import Account from "./pages/Account";   // ✅ newly added
-import Settings from "./pages/Settings"; // ✅ newly added
+import Account from "./pages/Account";
+import Settings from "./pages/Settings";
+import Find from "./pages/Find"; // ✅ added import
 
 export default function App() {
   return (
@@ -22,6 +27,7 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/account" element={<Account />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/find" element={<Find />} /> {/* ✅ Added Find route */}
       </Routes>
     </Router>
   );
