@@ -1,6 +1,6 @@
 // ===========================================
 // File: src/components/Header.tsx
-// Description: Dashboard header with "Activity Feed" link
+// Description: Dashboard header with "Activity Feed" and "Wellness Trends" links
 // ===========================================
 
 import React from "react";
@@ -24,6 +24,7 @@ export default function Header() {
     >
       {/* Navigation Links */}
       <nav style={{ display: "flex", justifyContent: "center", gap: "40px" }}>
+        {/* Activity Feed */}
         <span
           onClick={() => navigate("/activity")}
           style={{
@@ -37,6 +38,22 @@ export default function Header() {
           onMouseLeave={(e) => (e.currentTarget.style.color = "#cbd5e1")}
         >
           Activity Feed
+        </span>
+
+        {/* Wellness Trends */}
+        <span
+          onClick={() => navigate("/wellness")}
+          style={{
+            cursor: "pointer",
+            fontSize: "1.1rem",
+            color: "#cbd5e1",
+            transition: "color 0.3s",
+            textDecoration: "underline",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#ffffff")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#cbd5e1")}
+        >
+          Wellness Trends
         </span>
       </nav>
     </header>

@@ -1,6 +1,6 @@
 # ===========================================
 # File: reflectra/models.py
-# Description: Defines user profile, follow relationships, and posts
+# Description: Defines user profile, follow relationships, posts, and wellness tracking
 # ===========================================
 
 from django.db import models
@@ -87,3 +87,18 @@ class AccountabilityPosts(models.Model):
 
     def __str__(self):
         return f"Post by {self.user.username} at {self.timestamp}"
+
+
+# -------------------------------
+# Wellness / Mood Tracking
+# -------------------------------
+class MoodLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="mood_logs")
+    mood = models.IntegerField()  # 1–10 scale
+    stress = models.IntegerField()  # 1–10 scale
+    sleep = models.CharField(max_length=20, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - Mood {self.mood}, Stress {self.stress}"

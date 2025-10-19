@@ -26,6 +26,7 @@ export default function Dashboard() {
       ? "http://127.0.0.1:8000"
       : "https://reflectra-backend.onrender.com";
 
+  // ✅ Fetch user info
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -53,11 +54,35 @@ export default function Dashboard() {
     fetchUserInfo();
   }, [navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // ✅ Handle quiz submission and log to backend
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+
+      const response = await axios.post(
+        `${BASE_URL}/api/moodlogs/`,
+        {
+          mood,
+          stress,
+          sleep,
+          notes,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      console.log("✅ Quiz submitted successfully:", response.data);
+      setSubmitted(true);
+      setShowQuiz(false);
+    } catch (err) {
+      console.error("Error submitting quiz:", err);
+      alert("There was an error submitting your check-in. Please try again.");
+    }
   };
 
+  // ✅ Loading state
   if (loading)
     return (
       <div
@@ -74,6 +99,7 @@ export default function Dashboard() {
       </div>
     );
 
+  // ✅ Error state
   if (error)
     return (
       <div
@@ -91,6 +117,7 @@ export default function Dashboard() {
       </div>
     );
 
+  // ✅ Main dashboard UI
   return (
     <>
       <Header />

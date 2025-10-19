@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Account from "./pages/Account";
 import Settings from "./pages/Settings";
 import ActivityFeed from "./pages/ActivityFeed";
+import WellnessTrends from "./pages/WellnessTrends"; // ✅ Import new page
 
 export default function App() {
   return (
@@ -27,7 +28,11 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/account" element={<Account />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/activity" element={<ActivityFeed />} />      </Routes>
+        <Route path="/activity" element={<ActivityFeed />} />
+
+        {/* ✅ New Wellness Trends route */}
+        <Route path="/wellness" element={<WellnessTrends />} />
+      </Routes>
     </Router>
   );
 }

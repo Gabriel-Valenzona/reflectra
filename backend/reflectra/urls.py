@@ -4,7 +4,7 @@
 # ===========================================
 
 from django.urls import path
-from . import views, views_auth, views_posts
+from . import views, views_auth, views_posts, views_wellness
 
 urlpatterns = [
     # ✅ User registration & login
@@ -23,8 +23,11 @@ urlpatterns = [
     path('unfollow/<int:user_id>/', views.unfollow_user, name='unfollow_user'),
     path('followers/<int:user_id>/', views.get_followers, name='get_followers'),
 
-    # ✅ New endpoints for Activity Feed
+    # ✅ Activity Feed
     path('me/', views_auth.get_me, name='get_me'),
-    path('following/', views.get_following, name='get_following'),  # ✅ fixed reference
+    path('following/', views.get_following, name='get_following'),
     path('posts/', views_posts.list_create_posts, name='list_create_posts'),
+
+    # ✅ Wellness / Mood Logs
+    path('moodlogs/', views_wellness.MoodLogListCreateView.as_view(), name='moodlogs'),
 ]
