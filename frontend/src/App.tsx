@@ -1,63 +1,37 @@
-import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
-import mainImage from "./imgs/mainimage.gif";
+import mainImage from "./assets/imgs/mainimage.gif";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+
 
 export default function App() {
-  const [hoverLogin, setHoverLogin] = useState(false);
-  const [hoverCreate, setHoverCreate] = useState(false);
-
   return (
-    <div className="App">
-      <div
-        className="hero-section"
-        style={{ backgroundImage: `url(${mainImage})` }}
-      >
-        {/* App Title */}
-        <h1 className="title">Reflectra</h1>
-
-        {/* LOGIN SECTION */}
+    <Router>
+      <div className="App">
         <div
-          className="login-container"
-          onMouseEnter={() => setHoverLogin(true)}
-          onMouseLeave={() => setHoverLogin(false)}
+          className="hero-section"
+          style={{ backgroundImage: `url(${mainImage})` }}
         >
-          <button className="login-button">Login</button>
+          {/* App Title */}
+          <h1 className="title">Reflectra</h1>
 
-          {/* Login Modal — positioned above */}
-          <div className={`modal above-login ${hoverLogin ? "show" : ""}`}>
-            <div className="modal-content">
-              <h3>Login</h3>
-              <input type="email" placeholder="Email" />
-              <input type="password" placeholder="Password" />
-              <button className="modal-btn">Login</button>
-            </div>
+          {/* Buttons to navigate */}
+          <div className="button-container">
+            <Link to="/login" className="login-button">
+              Login
+            </Link>
+            <Link to="/register" className="link-button">
+              Create an Account
+            </Link>
           </div>
         </div>
 
-        {/* CREATE ACCOUNT SECTION */}
-        <div
-          className="link-container"
-          onMouseEnter={() => setHoverCreate(true)}
-          onMouseLeave={() => setHoverCreate(false)}
-        >
-          <button className="link-button">Create an Account</button>
-
-          {/* Create Account Modal — positioned below */}
-          <div className={`modal below-link ${hoverCreate ? "show" : ""}`}>
-            <div className="modal-content">
-              <h3>Create Account</h3>
-              <input type="text" placeholder="Username" />
-              <input type="email" placeholder="Email" />
-              <input type="password" placeholder="Password" />
-              <button className="modal-btn">Submit</button>
-            </div>
-          </div>
-        </div>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Routes>
       </div>
-
-      <div className="content-section">
-        <p></p>
-      </div>
-    </div>
+    </Router>
   );
 }
