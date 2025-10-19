@@ -7,9 +7,9 @@ https://docs.djangoproject.com/en/5.2/topics/http/urls/
 
 from django.contrib import admin
 from django.urls import path, include
-from django.http import JsonResponse  # 👈 add this import
+from django.http import JsonResponse
 
-# 👇 simple root route to confirm the backend is working
+# simple root route to confirm backend is running
 def home(request):
     return JsonResponse({
         "status": "ok",
@@ -18,7 +18,7 @@ def home(request):
     })
 
 urlpatterns = [
-    path('', home),  # 👈 add this line
+    path('', home),  # base health check
     path('admin/', admin.site.urls),
-    path('api/', include('reflectra.urls')),  # ✅ your app’s API routes
+    path('api/', include('reflectra.urls')),  # include all reflectra routes
 ]

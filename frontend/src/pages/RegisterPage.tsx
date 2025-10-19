@@ -1,4 +1,3 @@
-// src/pages/RegisterPage.tsx
 import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -13,7 +12,7 @@ export default function RegisterPage() {
 
   const navigate = useNavigate();
 
-  // Automatically pick backend URL
+  // ✅ automatically use correct backend (local or deployed)
   const BASE_URL =
     window.location.hostname === "localhost"
       ? "http://127.0.0.1:8000"
@@ -31,17 +30,22 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // POST request to Django backend registration endpoint
+      // ✅ POST to Django backend’s register endpoint
       const response = await axios.post(`${BASE_URL}/api/register/`, {
         username,
         email,
         password,
       });
 
+      console.log("✅ User registration successful:", response.data);
       setMessage("✅ Registration successful! Redirecting to login...");
+
+      // optional: log user details for debugging (DO NOT use in production)
+      console.log(`User created; username = ${username}, password = ${password}`);
+
       setTimeout(() => navigate("/login"), 1500);
     } catch (error: any) {
-      console.error("Error:", error);
+      console.error("❌ Registration error:", error);
       if (error.response) {
         setMessage(`❌ ${error.response.data.error || "Registration failed"}`);
       } else {
@@ -155,7 +159,6 @@ export default function RegisterPage() {
           <p style={{ marginTop: "15px", color: "#374151" }}>{message}</p>
         )}
 
-        {/* Login redirect link */}
         <p style={{ marginTop: "20px", color: "#374151" }}>
           Already have an account?{" "}
           <Link
