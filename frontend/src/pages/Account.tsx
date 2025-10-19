@@ -1,6 +1,7 @@
 // src/pages/Account.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Navbar from "../components/Navbar"; // ✅ Import the shared navbar
 
 export default function Account() {
   const [userInfo, setUserInfo] = useState({
@@ -93,97 +94,100 @@ export default function Account() {
     );
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        backgroundColor: "#0f172a",
-        color: "white",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px",
-      }}
-    >
-      <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>👤 Account Settings</h1>
-
-      <form
-        onSubmit={handleSave}
+    <>
+      <Navbar /> {/* ✅ Stays fixed in top-right corner */}
+      <div
         style={{
+          height: "100vh",
+          backgroundColor: "#0f172a",
+          color: "white",
           display: "flex",
           flexDirection: "column",
-          gap: "10px",
-          width: "300px",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "20px",
         }}
       >
-        <input
-          type="text"
-          placeholder="Username"
-          value={userInfo.username}
-          onChange={(e) => setUserInfo({ ...userInfo, username: e.target.value })}
-          style={{ padding: "10px", borderRadius: "5px", border: "none" }}
-        />
+        <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>👤 Account Settings</h1>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={userInfo.email}
-          onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })}
-          style={{ padding: "10px", borderRadius: "5px", border: "none" }}
-        />
-
-        <textarea
-          placeholder="Short bio..."
-          value={userInfo.bio}
-          onChange={(e) => setUserInfo({ ...userInfo, bio: e.target.value })}
-          rows={3}
-          style={{ padding: "10px", borderRadius: "5px", border: "none" }}
-        />
-
-        <select
-          value={userInfo.mood_preference}
-          onChange={(e) =>
-            setUserInfo({ ...userInfo, mood_preference: e.target.value })
-          }
-          style={{ padding: "10px", borderRadius: "5px", border: "none" }}
-        >
-          <option value="">Select mood</option>
-          {[
-            "happy",
-            "sad",
-            "angry",
-            "tired",
-            "chill",
-            "motivated",
-            "calm",
-            "stressed",
-            "neutral",
-          ].map((m) => (
-            <option key={m} value={m}>
-              {m.charAt(0).toUpperCase() + m.slice(1)}
-            </option>
-          ))}
-        </select>
-
-        <button
-          type="submit"
+        <form
+          onSubmit={handleSave}
           style={{
-            backgroundColor: "#2563eb",
-            color: "white",
-            padding: "10px",
-            borderRadius: "5px",
-            border: "none",
-            cursor: "pointer",
-            marginTop: "10px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            width: "300px",
           }}
         >
-          Save Changes
-        </button>
-      </form>
+          <input
+            type="text"
+            placeholder="Username"
+            value={userInfo.username}
+            onChange={(e) => setUserInfo({ ...userInfo, username: e.target.value })}
+            style={{ padding: "10px", borderRadius: "5px", border: "none" }}
+          />
 
-      {message && (
-        <p style={{ marginTop: "15px", color: "#a5b4fc" }}>{message}</p>
-      )}
-    </div>
+          <input
+            type="email"
+            placeholder="Email"
+            value={userInfo.email}
+            onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })}
+            style={{ padding: "10px", borderRadius: "5px", border: "none" }}
+          />
+
+          <textarea
+            placeholder="Short bio..."
+            value={userInfo.bio}
+            onChange={(e) => setUserInfo({ ...userInfo, bio: e.target.value })}
+            rows={3}
+            style={{ padding: "10px", borderRadius: "5px", border: "none" }}
+          />
+
+          <select
+            value={userInfo.mood_preference}
+            onChange={(e) =>
+              setUserInfo({ ...userInfo, mood_preference: e.target.value })
+            }
+            style={{ padding: "10px", borderRadius: "5px", border: "none" }}
+          >
+            <option value="">Select mood</option>
+            {[
+              "happy",
+              "sad",
+              "angry",
+              "tired",
+              "chill",
+              "motivated",
+              "calm",
+              "stressed",
+              "neutral",
+            ].map((m) => (
+              <option key={m} value={m}>
+                {m.charAt(0).toUpperCase() + m.slice(1)}
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="submit"
+            style={{
+              backgroundColor: "#2563eb",
+              color: "white",
+              padding: "10px",
+              borderRadius: "5px",
+              border: "none",
+              cursor: "pointer",
+              marginTop: "10px",
+            }}
+          >
+            Save Changes
+          </button>
+        </form>
+
+        {message && (
+          <p style={{ marginTop: "15px", color: "#a5b4fc" }}>{message}</p>
+        )}
+      </div>
+    </>
   );
 }

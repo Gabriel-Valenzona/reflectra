@@ -1,0 +1,93 @@
+// src/components/Navbar.tsx
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+export default function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    navigate("/login");
+  };
+
+  return (
+    <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
+      {/* Hamburger Icon */}
+      <div
+        style={{
+          cursor: "pointer",
+          width: "30px",
+        }}
+        onClick={() => setMenuOpen(!menuOpen)}
+      >
+        <div style={{ height: "4px", background: "white", marginBottom: "5px" }}></div>
+        <div style={{ height: "4px", background: "white", marginBottom: "5px" }}></div>
+        <div style={{ height: "4px", background: "white" }}></div>
+      </div>
+
+      {/* Dropdown */}
+      {menuOpen && (
+        <div
+          style={{
+            position: "absolute",
+            top: "40px",
+            right: 0,
+            backgroundColor: "#1e293b",
+            borderRadius: "8px",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+            width: "150px",
+            textAlign: "left",
+          }}
+        >
+          <p
+            style={{
+              padding: "10px",
+              cursor: "pointer",
+              borderBottom: "1px solid #334155",
+            }}
+            onClick={() => {
+              setMenuOpen(false);
+              navigate("/dashboard");
+            }}
+          >
+            Dashboard
+          </p>
+          <p
+            style={{
+              padding: "10px",
+              cursor: "pointer",
+              borderBottom: "1px solid #334155",
+            }}
+            onClick={() => {
+              setMenuOpen(false);
+              navigate("/account");
+            }}
+          >
+            Account
+          </p>
+          <p
+            style={{
+              padding: "10px",
+              cursor: "pointer",
+              borderBottom: "1px solid #334155",
+            }}
+            onClick={() => {
+              setMenuOpen(false);
+              navigate("/settings");
+            }}
+          >
+            Settings
+          </p>
+          <p
+            style={{ padding: "10px", cursor: "pointer", color: "#f87171" }}
+            onClick={handleLogout}
+          >
+            Sign Out
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -2,15 +2,14 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar"; // ✅ add this
 
 export default function Dashboard() {
   const [userInfo, setUserInfo] = useState<{ username: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [menuOpen, setMenuOpen] = useState(false); // ✅ toggle for hamburger
   const navigate = useNavigate();
 
-  // ✅ Automatically pick correct backend
   const BASE_URL =
     window.location.hostname === "localhost"
       ? "http://127.0.0.1:8000"
@@ -20,7 +19,6 @@ export default function Dashboard() {
     const fetchUserInfo = async () => {
       try {
         const token = localStorage.getItem("accessToken");
-
         if (!token) {
           setError("No token found. Please log in again.");
           setLoading(false);
@@ -30,11 +28,9 @@ export default function Dashboard() {
 
         const response = await axios.get(`${BASE_URL}/api/userinfo/`, {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: false,
         });
-
         setUserInfo(response.data);
-      } catch (err: any) {
+      } catch (err) {
         console.error("Error fetching user info:", err);
         setError("Failed to fetch user info. Please log in again.");
         setTimeout(() => navigate("/login"), 2000);
@@ -42,15 +38,8 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
-
     fetchUserInfo();
   }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    navigate("/login");
-  };
 
   if (loading)
     return (
@@ -86,79 +75,13 @@ export default function Dashboard() {
     );
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        backgroundColor: "#0f172a",
-        color: "white",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* ✅ Hamburger icon (top-right corner) */}
+    <>
+      <Navbar /> {/* ✅ This stays fixed and visible everywhere */}
       <div
         style={{
-          position: "absolute",
-          top: "20px",
-          right: "20px",
-          cursor: "pointer",
-          width: "30px",
-        }}
-        onClick={() => setMenuOpen(!menuOpen)}
-      >
-        <div style={{ height: "4px", background: "white", marginBottom: "5px" }}></div>
-        <div style={{ height: "4px", background: "white", marginBottom: "5px" }}></div>
-        <div style={{ height: "4px", background: "white" }}></div>
-      </div>
-
-      {/* ✅ Dropdown menu */}
-      {menuOpen && (
-        <div
-          style={{
-            position: "absolute",
-            top: "60px",
-            right: "20px",
-            backgroundColor: "#1e293b",
-            borderRadius: "8px",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-            width: "150px",
-            textAlign: "left",
-            zIndex: 10,
-          }}
-        >
-          <p
-            style={{
-              padding: "10px",
-              cursor: "pointer",
-              borderBottom: "1px solid #334155",
-            }}
-            onClick={() => navigate("/account")}
-          >
-            Account
-          </p>
-          <p
-            style={{
-              padding: "10px",
-              cursor: "pointer",
-              borderBottom: "1px solid #334155",
-            }}
-            onClick={() => navigate("/settings")}
-          >
-            Settings
-          </p>
-          <p
-            style={{ padding: "10px", cursor: "pointer", color: "#f87171" }}
-            onClick={handleLogout}
-          >
-            Sign Out
-          </p>
-        </div>
-      )}
-
-      {/* ✅ Main dashboard content */}
-      <div
-        style={{
-          flex: 1,
+          height: "100vh",
+          backgroundColor: "#0f172a",
+          color: "white",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
@@ -180,6 +103,6 @@ export default function Dashboard() {
           <p>No user information available.</p>
         )}
       </div>
-    </div>
+    </>
   );
 }
