@@ -1,6 +1,7 @@
 from django.urls import path
-from . import views
+from .views_auth import register_user, login_user
 
 urlpatterns = [
-    path("login/", views.login_user, name="login_user"),  # endpoint = /api/login/
+    path('api/register/', register_user, name='register_user'),
+    path('api/login/', login_user, name='login_user'),
 ]

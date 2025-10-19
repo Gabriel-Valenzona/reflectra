@@ -18,10 +18,7 @@ import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Load environment variables
 load_dotenv(BASE_DIR / '.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -33,9 +30,9 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 # Application definition
-
 INSTALLED_APPS = [
     'rest_framework',      # for Django REST API endpoints
+    'rest_framework_simplejwt',  # for JWT authentication
     'corsheaders',         # for Cross-Origin Resource Sharing (React <-> Django)
 
     'django.contrib.admin',
@@ -104,14 +101,13 @@ if not db_url_value:
         f"Please set {db_url_key}=postgresql://..."
     )
 
-DATABASES = {
-    "default": dj_database_url.parse(
-        db_url_value,
-        conn_max_age=600,   # persistent connections for performance
-        ssl_require=True,   # Neon requires SSL
-    )
-}
 
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -131,16 +127,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Django REST Framework default configuration
+
+# Django REST Framework configuration
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.BasicAuthentication",
-    ],
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",  # loosened for dev
-    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.AllowAny",
+    ),
 }
+
 
 # CORS configuration
 CORS_ALLOW_ALL_ORIGINS = True  # dev-only convenience; tighten in prod
@@ -153,6 +150,7 @@ CORS_ALLOW_ALL_ORIGINS = True  # dev-only convenience; tighten in prod
 #     "http://localhost:5173",
 #     "http://127.0.0.1:5173",
 # ]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -169,7 +167,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-# --- STATIC FILES CONFIG ---
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
