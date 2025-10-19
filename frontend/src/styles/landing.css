@@ -1,0 +1,181 @@
+/* src/styles/landing.css
+   Mirrors the vanilla hero + about behavior for React/Tailwind.
+   Uses CSS variables defined in your global CSS (primary, secondary, etc.). */
+
+/* -------------- HERO (HEADER) -------------- */
+.header {
+  position: relative;
+  height: 100vh;
+  z-index: 0;          /* keep ::before above page bg */
+  isolation: isolate;  /* ensure ::before stays in header stacking context */
+}
+
+/* Extend 15rem below the header and sit BEHIND header content, not behind the page */
+.header::before {
+  position: absolute;
+  content: "";
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 15rem);
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0), var(--primary-color)),
+    var(--header-image, url("/src/assets/imgs/header-1.jpg"));
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* -------------- ABOUT GRADIENT -------------- */
+.about {
+  background-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    var(--primary-color) 8rem
+  );
+  overflow: hidden;
+}
+
+/* -------------- IMAGES (match vanilla look) -------------- */
+.about__image img {
+  max-width: 400px;
+  margin-inline: auto;
+  border-radius: 5px;
+  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* -------------- SUBHEADER DECOR (general) -------------- */
+.section__subheader {
+  position: relative;
+  isolation: isolate;
+  padding-left: 5rem;     /* space for the LEFT horizontal gold line */
+  letter-spacing: 2px;
+  color: var(--secondary-color);
+}
+.section__subheader::before {
+  position: absolute;
+  content: "";
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  height: 2px;
+  width: 4rem;
+  background-color: var(--secondary-color);
+}
+.section__subheader::after {
+  /* In ABOUT, this becomes the big watermark (01/02/03).
+     We'll override it ONLY inside the hero to be the RIGHT gold line. */
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(-60%, -50%);
+  font-size: 8rem;
+  font-weight: 600;
+  color: var(--white);
+  opacity: 0.1;
+  z-index: -1;
+  content: "";
+}
+
+/* numeric watermarks per block (About only) */
+.about__content-1 .section__subheader::after { content: "01"; }
+.about__content-2 .section__subheader::after { content: "02"; }
+.about__content-3 .section__subheader::after { content: "03"; }
+
+/* -------------- TYPOGRAPHY (match vanilla headings) -------------- */
+.section__header {
+  margin-bottom: 1rem;
+  font-size: 3rem;
+  font-weight: 400;
+  font-family: var(--header-font, "Playfair Display", serif);
+  color: var(--white);
+}
+
+/* -------------- HEADER LAYOUT (CENTER like vanilla) -------------- */
+.header__container {
+  position: relative;
+  isolation: isolate;
+  height: calc(100% - 75px);
+  display: flex;
+  align-items: center;
+  justify-content: center; /* center horizontally */
+  text-align: center;      /* center text */
+  padding-left: 0;
+}
+
+.header__content {
+  max-width: 700px;
+  margin-left: 0;
+}
+
+.header__content .section__header {
+  font-size: 4rem;
+  font-weight: 600;
+  line-height: 5rem;
+}
+
+/* Center the label as a compact unit */
+.header__content .section__subheader {
+  display: inline-block;   /* shrink-to-fit so it can be centered */
+  margin-inline: auto;     /* center the subheader block itself */
+  text-align: left;        /* keep the text left inside the block */
+  padding-right: 5rem;     /* space for the RIGHT horizontal gold line */
+}
+
+/* --- RIGHT horizontal accent (hero only) --- */
+.header__content .section__subheader::after {
+  content: "";                     /* override ABOUT watermark 01/02/03 in hero */
+  top: 50%;
+  left: auto;
+  right: 0;                        /* stick to the right side of the label */
+  transform: translateY(-50%);     /* horizontal line, centered vertically */
+  width: 4rem;
+  height: 2px;
+  background-color: var(--secondary-color);
+  opacity: 1;
+  z-index: 1;
+}
+
+/* left-side vertical socials */
+.header__socials {
+  position: absolute;
+  left: 0;
+  align-items: center;
+  gap: 1rem;
+  color: var(--white);
+  transform: translateX(calc(-50% + 1rem)) rotate(90deg);
+}
+.header__socials a { font-size: 1.6rem; line-height: 1; }
+.header__socials a:hover { color: var(--secondary-color); }
+
+/* Mobile tidy: hide the small accents for clarity */
+@media (max-width: 768px) {
+  .header__container {
+    justify-content: center;
+    text-align: center;
+    padding-left: 0;
+  }
+  .header__content .section__subheader {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .header__content .section__subheader::before,
+  .header__content .section__subheader::after {
+    display: none;
+  }
+}
+
+/* -------------- DESKTOP GRID BEHAVIOR (vanilla parity) -------------- */
+@media (width > 768px) {
+  .about__container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: center;
+    gap: 10rem 2rem;
+  }
+  .about__image-1 { grid-area: 1 / 2 / 2 / 3; }
+  .about__image-3 { grid-area: 3 / 2 / 4 / 3; }
+  .about__content { margin-left: 6rem; } /* ~ Tailwind md:ml-24 */
+}
