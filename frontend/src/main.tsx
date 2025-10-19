@@ -8,6 +8,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./styles/global.css";
 import axios from "axios";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
 // ✅ Global Axios interceptor (skips login/register routes)
 axios.interceptors.response.use(
